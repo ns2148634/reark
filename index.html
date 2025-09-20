@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>會員系統入口</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+  <div id="content">
+    <h2>載入中...</h2>
+  </div>
+
+  <script>
+    const LIFF_ID = '2008128192-ANzL1oyW'; // 改成你的LIFF ID
+    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbztaK2IQ9rJqnzPLUL1Mznq0r3FJrkWyzmdzWsGlL61edPsTgB11JnTUDk0yjGnw_h4/exec';
+
+    async function main() {
+      await liff.init({ liffId: LIFF_ID });
+
+      if (!liff.isLoggedIn()) {
+        liff.login();
+        return;
+      }
+
+      const profile = await liff.getProfile();
+      const userId = profile.userId;
+
+      // 呼叫後端確認是否會員
+      const res = await fetch(GAS_API_URL + '?page=checkmember', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+      });
+      const data = await res.json();
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const page = urlParams.get('page');
+
+      if (!data.isMember) {
+        if (page !== 'register') {
+          alert('您尚未加入會員，請先註冊');
+          window.location.href = 'register.html';
+          return;
+        }
+      } else {
+        if (page && page !== 'register') {
+          window.location.href = page + '.html';
+          return;
+        }
+      }
+
+      document.getElementById('content').innerHTML = '<h2>歡迎使用會員系統</h2><p>請透過圖文選單操作。</p>';
+    }
+
+    main();
+  </script>
+</body>
+</html>
