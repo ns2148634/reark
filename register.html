@@ -1,56 +1,11 @@
-<!-- register.html -->
 <!DOCTYPE html>
 <html>
 <head>
   <title>加入會員</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="stylesheet" href="style.css" />
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f9f9f9;
-      margin:0; padding:0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      box-sizing: border-box;
-    }
-    form {
-      background: white;
-      border-radius: 8px;
-      padding: 20px;
-      width: 90%;
-      max-width: 400px;
-      box-shadow: 0 0 10px #ddd;
-    }
-    label {
-      font-weight: bold;
-      display: block;
-      margin-top: 12px;
-      margin-bottom: 4px;
-    }
-    input, select, button {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 12px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-    button {
-      background-color: #00c300;
-      color: white;
-      font-weight: bold;
-      border: none;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #009900;
-    }
-  </style>
 </head>
 <body>
   <form id="registerForm">
@@ -67,65 +22,14 @@
       <option value="其他">其他</option>
     </select>
     <label for="phone">手機號碼</label>
-    <input type="tel" id="phone" pattern="^09\d{8}$" placeholder="09xxxxxxxx" required />
+    <input type="tel" id="phone" pattern="^09\\d{8}$" placeholder="09xxxxxxxx" required />
     <label for="address">地址</label>
     <input type="text" id="address" required />
     <label for="idNumber">身份證字號</label>
-    <input type="text" id="idNumber" pattern="^[A-Z][12]\d{8}$" placeholder="A123456789" maxlength="10" required />
+    <input type="text" id="idNumber" pattern="^[A-Z][12]\\d{8}$" placeholder="A123456789" maxlength="10" required />
     <button type="submit">送出註冊</button>
   </form>
 
-  <script>
-    // 換成你的LIFF ID
-    const LIFF_ID = '你的LIFF_ID';
-    // GAS Web App API URL，請保持安全並非金鑰直接放前端
-    const GAS_API_URL = 'https://script.google.com/macros/s/你的GAS_ID/exec?page=register';
-
-    async function main() {
-      await liff.init({ liffId: LIFF_ID });
-      if (!liff.isLoggedIn()) {
-        liff.login();
-      }
-    }
-
-    document.getElementById('registerForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      try {
-        const profile = await liff.getProfile();
-        const data = {
-          userId: profile.userId,
-          name: document.getElementById('name').value.trim(),
-          birthday: document.getElementById('birthday').value,
-          gender: document.getElementById('gender').value,
-          phone: document.getElementById('phone').value.trim(),
-          address: document.getElementById('address').value.trim(),
-          idNumber: document.getElementById('idNumber').value.trim(),
-          memberLevel: '一般會員',
-          totalPoints: 0
-        };
-
-        const res = await fetch(GAS_API_URL,{
-          method: 'POST',
-          headers:{ 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-
-        const result = await res.json();
-
-        alert(result.message);
-
-        if(result.success){
-          // 可導向會員資料或其他頁面
-          // location.href = '#你的會員資料頁面LIFF URL';
-        }
-      } catch(e){
-        alert('註冊失敗，請稍後再試');
-        console.error(e);
-      }
-    });
-
-    main();
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
