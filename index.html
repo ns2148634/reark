@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>會員系統入口</title>
+  <title>會員系統入口 (Debug版)</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <link rel="stylesheet" href="style.css" />
@@ -10,48 +10,90 @@
 <body>
   <div id="content">
     <h2>載入中...</h2>
+    <pre id="debugLog" style="white-space: pre-wrap; color: red;"></pre>
   </div>
 
   <script>
-    const LIFF_ID = '2008128192-ANzL1oyW'; // 改成你的LIFF ID
-    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbztaK2IQ9rJqnzPLUL1Mznq0r3FJrkWyzmdzWsGlL61edPsTgB11JnTUDk0yjGnw_h4/exec';
+    const LIFF_ID = '2008128192-ANzL1oyW'; // 請換成你的LIFF ID
+    const GAS_API_URL = 'https://script.google.com/macros/s/1PG_8rap6zt0t1etxeSJUNvjRwjkuAIB-TM3k3QrFNkA/exec';
+
+    function logDebug(message) {
+      const debugEl = document.getElementById('debugLog');
+      debugEl.textContent += message + "\n";
+      console.log(message);
+    }
 
     async function main() {
-      await liff.init({ liffId: LIFF_ID });
-
-      if (!liff.isLoggedIn()) {
-        liff.login();
+      try {
+        logDebug('開始初始化LIFF...');
+        await liff.init({ liffId: LIFF_ID });
+        logDebug('LIFF初始化成功');
+      } catch (e) {
+        logDebug('LIFF初始化失敗：' + e.message);
+        document.getElementById('content').innerHTML = '<h3>LIFF初始化失敗，請刷新或稍後再試。</h3>';
         return;
       }
 
-      const profile = await liff.getProfile();
-      const userId = profile.userId;
-
-      // 呼叫後端確認是否會員
-      const res = await fetch(GAS_API_URL + '?page=checkmember', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId })
-      });
-      const data = await res.json();
-
-      const urlParams = new URLSearchParams(window.location.search);
-      const page = urlParams.get('page');
-
-      if (!data.isMember) {
-        if (page !== 'register') {
-          alert('您尚未加入會員，請先註冊');
-          window.location.href = 'register.html';
-          return;
-        }
+      if (!liff.isLoggedIn()) {
+        logDebug('尚未登入，執行liff.login()');
+        liff.login();
+        return;
       } else {
-        if (page && page !== 'register') {
-          window.location.href = page + '.html';
-          return;
-        }
+        logDebug('已登入');
       }
 
-      document.getElementById('content').innerHTML = '<h2>歡迎使用會員系統</h2><p>請透過圖文選單操作。</p>';
+      let profile;
+      try {
+        profile = await liff.getProfile();
+        logDebug('取得用戶資料: ' + JSON.stringify(profile));
+      } catch (e) {
+        logDebug('取得用戶資料失敗: ' + e.message);
+        document.getElementById('content').innerHTML = '<h3>取得用戶資料失敗，請刷新重試。</h3>';
+        return;
+      }
+
+      try {
+        logDebug('開始呼叫API檢查會員身份...');
+        const userId = profile.userId;
+        const url = GAS_API_URL + '?page=checkmember&userId=' + encodeURIComponent(userId);
+        const res = await fetch(url, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!res.ok) {
+          logDebug('API回應錯誤，狀態碼: ' + res.status);
+          document.getElementById('content').innerHTML = '<h3>伺服器錯誤，請稍後再試。</h3>';
+          return;
+        }
+
+        const data = await res.json();
+        logDebug('會員資料回傳：' + JSON.stringify(data));
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const page = urlParams.get('page');
+
+        if (!data.isMember) {
+          logDebug('用戶非會員');
+          if (page !== 'register') {
+            alert('您尚未加入會員，請先註冊');
+            window.location.href = 'register.html';
+            return;
+          }
+        } else {
+          logDebug('用戶為會員');
+          if (page && page !== 'register') {
+            window.location.href = page + '.html';
+            return;
+          }
+        }
+
+        document.getElementById('content').innerHTML = '<h2>歡迎使用會員系統</h2><p>請透過圖文選單操作。</p>';
+
+      } catch (e) {
+        logDebug('檢查會員狀態時發生錯誤：' + e.message);
+        document.getElementById('content').innerHTML = '<h3>伺服器不穩定，請稍後再試。</h3>';
+      }
     }
 
     main();
