@@ -30,6 +30,54 @@
     <button type="submit">送出註冊</button>
   </form>
 
-  <script src="script.js"></script>
+  <script>
+    const LIFF_ID = '2008128192-ANzL1oyW'; // 改成你的LIFF ID
+    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbztaK2IQ9rJqnzPLUL1Mznq0r3FJrkWyzmdzWsGlL61edPsTgB11JnTUDk0yjGnw_h4/exec?page=register';
+
+    async function main() {
+      await liff.init({ liffId: LIFF_ID });
+
+      if (!liff.isLoggedIn()) {
+        liff.login();
+      }
+    }
+
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      try {
+        const profile = await liff.getProfile();
+
+        const data = {
+          userId: profile.userId,
+          name: document.getElementById('name').value.trim(),
+          birthday: document.getElementById('birthday').value,
+          gender: document.getElementById('gender').value,
+          phone: document.getElementById('phone').value.trim(),
+          address: document.getElementById('address').value.trim(),
+          idNumber: document.getElementById('idNumber').value.trim(),
+          memberLevel: '一般會員',
+          totalPoints: 0
+        };
+
+        const res = await fetch(GAS_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        alert(result.message);
+        if (result.success) {
+          // 註冊成功後跳回首頁或會員資料等頁
+          window.location.href = 'index.html?page=profile';
+        }
+      } catch (error) {
+        alert('註冊失敗，請稍後再試');
+        console.error(error);
+      }
+    });
+
+    main();
+  </script>
 </body>
 </html>
