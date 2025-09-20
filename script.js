@@ -1,5 +1,5 @@
-const LIFF_ID = '2008128192-ANzL1oyW';  // 請換成你自己的LIFF ID
-const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbztaK2IQ9rJqnzPLUL1Mznq0r3FJrkWyzmdzWsGlL61edPsTgB11JnTUDk0yjGnw_h4/exec?page=register';  // 你的GAS Web App URL
+const LIFF_ID = '2008128192-ANzL1oyW';  // 請換成你的LIFF ID
+const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbztaK2IQ9rJqnzPLUL1Mznq0r3FJrkWyzmdzWsGlL61edPsTgB11JnTUDk0yjGnw_h4/exec?page=register';
 
 async function main() {
   try {
@@ -43,8 +43,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     alert(result.message);
 
     if (result.success) {
-      // 成功動作，例如跳轉頁面
-      // location.href = '會員資料等其他頁面URL';
+      // 註冊成功處理，你可以加入跳轉
     }
   } catch (e) {
     alert('註冊失敗，請稍後再試');
