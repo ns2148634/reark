@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>會員系統入口 (Debug版)</title>
+  <title>會員系統入口</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <link rel="stylesheet" href="./style.css" />
@@ -9,33 +9,27 @@
 </head>
 <body>
   <div id="content">
-    <h2>載入中...</h2>
-    <pre id="debugLog" style="white-space: pre-wrap; color: red;"></pre>
+    <h2>系統載入中，請稍候…</h2>
   </div>
 
   <script>
-    const LIFF_ID = '2008128192-ANzL1oyW'; // 請換成你的LIFF ID
+    const LIFF_ID = '2008128192-ANzL1oyW';
     const GAS_API_URL = 'https://script.google.com/macros/s/1PG_8rap6zt0t1etxeSJUNvjRwjkuAIB-TM3k3QrFNkA/exec';
 
-    function logDebug(message) {
-      const debugEl = document.getElementById('debugLog');
-      debugEl.textContent += message + "\n";
-      console.log(message);
+    function getPageParam() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('page');
     }
 
     async function main() {
-      logDebug('開始初始化 LIFF...');
       try {
         await liff.init({ liffId: LIFF_ID });
-        logDebug('LIFF初始化成功');
       } catch (e) {
-        logDebug('LIFF初始化失敗：' + e.message);
-        document.getElementById('content').innerHTML = '<h3>LIFF 初始化失敗，請在 LINE App 中開啟或稍後再試。</h3>';
+        document.getElementById('content').innerHTML = '<h3>LIFF 初始化失敗，請透過 LINE App 開啟本頁。</h3>';
         return;
       }
 
       if (!liff.isLoggedIn()) {
-        logDebug('尚未登入，執行 liff.login()');
         liff.login();
         return;
       }
@@ -43,47 +37,38 @@
       let profile;
       try {
         profile = await liff.getProfile();
-        logDebug('取得用戶資料: ' + JSON.stringify(profile));
       } catch (e) {
-        logDebug('取得用戶資料失敗: ' + e.message);
-        document.getElementById('content').innerHTML = '<h3>取得用戶資料失敗，請刷新重試。</h3>';
+        document.getElementById('content').innerHTML = '<h3>取得用戶資料失敗，請重新整理。</h3>';
         return;
       }
 
+      const userId = profile.userId;
+      const page = getPageParam();
+
       try {
-        logDebug('呼叫會員檢查 API...');
-        const userId = profile.userId;
-        const url = `${GAS_API_URL}?page=checkmember&userId=${encodeURIComponent(userId)}`;
+        const res = await fetch(`${GAS_API_URL}?page=checkmember&userId=${encodeURIComponent(userId)}`);
+        if (!res.ok) throw new Error('伺服器錯誤');
 
-        const res = await fetch(url);
-        if (!res.ok) {
-          throw new Error(`API回應錯誤，狀態碼: ${res.status}`);
-        }
         const data = await res.json();
-        logDebug('會員資料回傳：' + JSON.stringify(data));
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const page = urlParams.get('page');
 
         if (!data.isMember) {
-          logDebug('用戶非會員');
+          // 尚未是會員，導向註冊頁（page參數非register時）
           if (page !== 'register') {
-            alert('您尚未加入會員，請先註冊');
             window.location.href = 'register.html';
             return;
           }
         } else {
-          logDebug('用戶為會員');
+          // 已是會員，且有page參數且不是register，導向指定會員頁面
           if (page && page !== 'register') {
             window.location.href = page + '.html';
             return;
           }
         }
 
-        document.getElementById('content').innerHTML = '<h2>歡迎使用會員系統</h2><p>請透過圖文選單操作。</p>';
+        // 預設顯示歡迎訊息
+        document.getElementById('content').innerHTML = '<h2>歡迎使用會員系統</h2><p>請透過圖文選單進行操作。</p>';
 
       } catch (e) {
-        logDebug('API呼叫錯誤或伺服器失敗：' + e.message);
         document.getElementById('content').innerHTML = '<h3>伺服器或網路不穩定，請稍後再試。</h3>';
       }
     }
