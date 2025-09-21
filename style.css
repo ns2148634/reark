@@ -10,13 +10,26 @@ body {
   box-sizing: border-box;
 }
 
-form {
+/* 新增外框容器 */
+.register-container {
+  width: 90%;
+  max-width: 400px;
   background: white;
   border-radius: 8px;
   padding: 20px;
-  width: 90%;
-  max-width: 400px;
   box-shadow: 0 0 10px #ddd;
+  box-sizing: border-box;
+}
+
+/* 調整 h2 使其置中並與表單間距一致 */
+.register-container h2 {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+/* 調整表單為滿寬度 */
+form#registerForm {
+  width: 100%;
 }
 
 label {
@@ -48,9 +61,4 @@ button {
 
 button:hover {
   background-color: #009900;
-}
-/* 讓標題置中且有間距 */
-h2 {
-  text-align: center;
-  margin-bottom: 24px;
 }
