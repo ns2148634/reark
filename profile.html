@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>會員資料</title>
+  <link rel="stylesheet" href="./style.css" />
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+  <div class="profile-container">
+    <h2>會員資料</h2>
+    <form id="profileForm" autocomplete="off" novalidate>
+      <label>註冊時間</label>
+      <input type="text" id="registerTime" disabled />
+
+      <label>LINE 用戶ID</label>
+      <input type="text" id="userId" disabled />
+
+      <label for="name">姓名</label>
+      <input type="text" id="name" name="name" required />
+
+      <label for="idNumber">身份證字號</label>
+      <input type="text" id="idNumber" name="idNumber" maxlength="10" required pattern="^[A-Z][12]\d{8}$" />
+
+      <label for="birthday">生日</label>
+      <input type="date" id="birthday" name="birthday" required />
+
+      <label for="gender">性別</label>
+      <select id="gender" name="gender" required>
+        <option value="">請選擇</option>
+        <option value="男">男</option>
+        <option value="女">女</option>
+      </select>
+
+      <label for="phone">手機號碼</label>
+      <input type="tel" id="phone" name="phone" pattern="09\d{8}" required placeholder="09xxxxxxxx" />
+
+      <label for="address">居住地址</label>
+      <input type="text" id="address" name="address" required />
+
+      <label>註冊據點</label>
+      <input type="text" id="registerLocation" disabled />
+
+      <label>會員等級</label>
+      <input type="text" id="memberLevel" disabled />
+
+      <label>累計積點</label>
+      <input type="number" id="totalPoints" disabled />
+
+      <div class="buttons">
+        <button type="button" id="editBtn">修改</button>
+        <button type="submit" id="saveBtn" style="display:none">儲存</button>
+        <button type="button" id="cancelBtn" style="display:none">取消</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const LIFF_ID = '2008128192-ANzL1oyW'; // 替換為你的 LIFF_ID
+    const GAS_API_URL = 'https://script.google.com/macros/s/你的部署ID/exec'; // 替換你的 GAS URL
+
+    let originalData = {};
+
+    async function init() {
+      try {
+        await liff.init({ liffId: LIFF_ID });
+        if (!liff.isLoggedIn()) {
+          liff.login();
+          return;
+        }
+        const profile = await liff.getProfile();
+        const userId = profile.userId;
+
+        // 取得會員資料
+        const res = await fetch(`${GAS_API_URL}?page=getMember&userId=${encodeURIComponent(userId)}`);
+        if (!res.ok) throw new Error('查詢失敗');
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || '查無資料');
+
+        fillForm(data.member);
+        setFormEditable(false);
+        originalData = { ...data.member };
+      } catch (err) {
+        alert(err.message || '發生錯誤');
+      }
+    }
+
+    function fillForm(data) {
+      document.getElementById('registerTime').value = data.registerTime || '';
+      document.getElementById('userId').value = data.userId || '';
+      document.getElementById('name').value = data.name || '';
+      document.getElementById('idNumber').value = data.idNumber || '';
+      document.getElementById('birthday').value = data.birthday || '';
+      document.getElementById('gender').value = data.gender || '';
+      document.getElementById('phone').value = data.phone || '';
+      document.getElementById('address').value = data.address || '';
+      document.getElementById('registerLocation').value = data.registerLocation || '';
+      document.getElementById('memberLevel').value = data.memberLevel || '';
+      document.getElementById('totalPoints').value = data.totalPoints || 0;
+    }
+
+    function setFormEditable(editable) {
+      ['name', 'idNumber', 'birthday', 'gender', 'phone', 'address'].forEach(id => {
+        document.getElementById(id).disabled = !editable;
+      });
+      document.getElementById('editBtn').style.display = editable ? 'none' : '';
+      document.getElementById('saveBtn').style.display = editable ? '' : 'none';
+      document.getElementById('cancelBtn').style.display = editable ? '' : 'none';
+    }
+
+    document.getElementById('editBtn').addEventListener('click', () => {
+      setFormEditable(true);
+    });
+
+    document.getElementById('cancelBtn').addEventListener('click', () => {
+      fillForm(originalData);
+      setFormEditable(false);
+    });
+
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = {
+        page: 'updateMember',
+        userId: document.getElementById('userId').value,
+        name: document.getElementById('name').value.trim(),
+        idNumber: document.getElementById('idNumber').value.trim(),
+        birthday: document.getElementById('birthday').value,
+        gender: document.getElementById('gender').value,
+        phone: document.getElementById('phone').value.trim(),
+        address: document.getElementById('address').value.trim()
+      };
+
+      try {
+        const res = await fetch(GAS_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        alert(result.message);
+        if (result.success) {
+          originalData = { ...data, registerTime: originalData.registerTime, memberLevel: originalData.memberLevel, registerLocation: originalData.registerLocation, totalPoints: originalData.totalPoints, userId: originalData.userId };
+          setFormEditable(false);
+          fillForm(originalData);
+        }
+      } catch (err) {
+        alert('更新失敗，請稍後再試');
+      }
+    });
+
+    window.onload = init;
+  </script>
+</body>
+</html>
