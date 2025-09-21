@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>會員系統入口</title>
+  <title>會員導向頁面</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <link rel="stylesheet" href="./style.css" />
@@ -9,17 +9,12 @@
 </head>
 <body>
   <div id="content">
-    <h2>系統載入中，請稍候…</h2>
+    <h2>系統載入中，請稍候...</h2>
   </div>
 
   <script>
-    const LIFF_ID = '2008128192-ANzL1oyW';
-    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbztaK2IQ9rJqnzPLUL1Mznq0r3FJrkWyzmdzWsGlL61edPsTgB11JnTUDk0yjGnw_h4/exec';
-
-    function getPageParam() {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get('page');
-    }
+    const LIFF_ID = '2008128192-ANzL1oyW'; // 請替換為你的LIFF ID
+    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbztaK2IQ9rJqnzPLUL1Mznq0r3FJrkWyzmdzWsGlL61edPsTgB11JnTUDk0yjGnw_h4/exec'; // 替換成你的 GAS Web App URL
 
     async function main() {
       try {
@@ -38,38 +33,28 @@
       try {
         profile = await liff.getProfile();
       } catch (e) {
-        document.getElementById('content').innerHTML = '<h3>取得用戶資料失敗，請重新整理。</h3>';
+        document.getElementById('content').innerHTML = '<h3>取得用戶資料失敗，請重新整理本頁。</h3>';
         return;
       }
 
       const userId = profile.userId;
-      const page = getPageParam();
 
       try {
         const res = await fetch(`${GAS_API_URL}?page=checkmember&userId=${encodeURIComponent(userId)}`);
-        if (!res.ok) throw new Error('伺服器錯誤');
+        if (!res.ok) throw new Error('伺服器回應錯誤');
 
         const data = await res.json();
 
-        if (!data.isMember) {
-          // 尚未是會員，導向註冊頁（page參數非register時）
-          if (page !== 'register') {
-            window.location.href = 'register.html';
-            return;
-          }
+        if (data.isMember) {
+          // 是會員，跳會員資料頁
+          window.location.href = 'profile.html';
         } else {
-          // 已是會員，且有page參數且不是register，導向指定會員頁面
-          if (page && page !== 'register') {
-            window.location.href = page + '.html';
-            return;
-          }
+          // 非會員，跳註冊頁
+          window.location.href = 'register.html';
         }
-
-        // 預設顯示歡迎訊息
-        document.getElementById('content').innerHTML = '<h2>歡迎使用會員系統</h2><p>請透過圖文選單進行操作。</p>';
-
       } catch (e) {
         document.getElementById('content').innerHTML = '<h3>伺服器或網路不穩定，請稍後再試。</h3>';
+        console.error(e);
       }
     }
 
