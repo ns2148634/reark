@@ -4,7 +4,7 @@
   <title>會員系統入口 (Debug版)</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="./style.css" />
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
@@ -24,22 +24,20 @@
     }
 
     async function main() {
+      logDebug('開始初始化 LIFF...');
       try {
-        logDebug('開始初始化LIFF...');
         await liff.init({ liffId: LIFF_ID });
         logDebug('LIFF初始化成功');
       } catch (e) {
         logDebug('LIFF初始化失敗：' + e.message);
-        document.getElementById('content').innerHTML = '<h3>LIFF初始化失敗，請刷新或稍後再試。</h3>';
+        document.getElementById('content').innerHTML = '<h3>LIFF 初始化失敗，請在 LINE App 中開啟或稍後再試。</h3>';
         return;
       }
 
       if (!liff.isLoggedIn()) {
-        logDebug('尚未登入，執行liff.login()');
+        logDebug('尚未登入，執行 liff.login()');
         liff.login();
         return;
-      } else {
-        logDebug('已登入');
       }
 
       let profile;
@@ -53,20 +51,14 @@
       }
 
       try {
-        logDebug('開始呼叫API檢查會員身份...');
+        logDebug('呼叫會員檢查 API...');
         const userId = profile.userId;
-        const url = GAS_API_URL + '?page=checkmember&userId=' + encodeURIComponent(userId);
-        const res = await fetch(url, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
-        });
+        const url = `${GAS_API_URL}?page=checkmember&userId=${encodeURIComponent(userId)}`;
 
+        const res = await fetch(url);
         if (!res.ok) {
-          logDebug('API回應錯誤，狀態碼: ' + res.status);
-          document.getElementById('content').innerHTML = '<h3>伺服器錯誤，請稍後再試。</h3>';
-          return;
+          throw new Error(`API回應錯誤，狀態碼: ${res.status}`);
         }
-
         const data = await res.json();
         logDebug('會員資料回傳：' + JSON.stringify(data));
 
@@ -91,12 +83,12 @@
         document.getElementById('content').innerHTML = '<h2>歡迎使用會員系統</h2><p>請透過圖文選單操作。</p>';
 
       } catch (e) {
-        logDebug('檢查會員狀態時發生錯誤：' + e.message);
-        document.getElementById('content').innerHTML = '<h3>伺服器不穩定，請稍後再試。</h3>';
+        logDebug('API呼叫錯誤或伺服器失敗：' + e.message);
+        document.getElementById('content').innerHTML = '<h3>伺服器或網路不穩定，請稍後再試。</h3>';
       }
     }
 
-    main();
+    window.onload = main;
   </script>
 </body>
 </html>
