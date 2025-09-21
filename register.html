@@ -1,83 +1,58 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-Hant">
 <head>
-  <title>加入會員</title>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>會員註冊</title>
+
+  <!-- 連結 CSS -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- LIFF SDK (如果需要 LINE 登入) -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
-  <form id="registerForm">
-    <h2>加入會員</h2>
-    <label for="name">姓名</label>
-    <input type="text" id="name" required />
-    <label for="birthday">生日</label>
-    <input type="date" id="birthday" required />
-    <label for="gender">性別</label>
-    <select id="gender" required>
-      <option value="">請選擇</option>
-      <option value="男">男</option>
-      <option value="女">女</option>
-      <option value="其他">其他</option>
-    </select>
-    <label for="phone">手機號碼</label>
-    <input type="tel" id="phone" pattern="^09\\d{8}$" placeholder="09xxxxxxxx" required />
-    <label for="address">地址</label>
-    <input type="text" id="address" required />
-    <label for="idNumber">身份證字號</label>
-    <input type="text" id="idNumber" pattern="^[A-Z][12]\\d{8}$" placeholder="A123456789" maxlength="10" required />
-    <button type="submit">送出註冊</button>
-  </form>
+  <div class="container">
+    <h1>會員註冊</h1>
 
+    <form id="registerForm">
+      <label for="name">姓名</label>
+      <input type="text" id="name" name="name" required>
+
+      <label for="phone">手機號碼</label>
+      <input type="tel" id="phone" name="phone" required pattern="09\d{8}">
+
+      <label for="gender">性別</label>
+      <select id="gender" name="gender">
+        <option value="">請選擇</option>
+        <option value="男">男</option>
+        <option value="女">女</option>
+      </select>
+
+      <label for="birthday">生日</label>
+      <input type="date" id="birthday" name="birthday" required>
+
+      <label for="address">居住地址</label>
+      <input type="text" id="address" name="address">
+
+      <label for="branch">註冊據點</label>
+      <input type="text" id="branch" name="branch">
+
+      <button type="submit">送出註冊</button>
+    </form>
+
+    <p id="message"></p>
+  </div>
+
+  <!-- 前端 JS -->
+  <script src="script.js"></script>
   <script>
-    const LIFF_ID = '2008128192-ANzL1oyW'; // 改成你的LIFF ID
-    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbztaK2IQ9rJqnzPLUL1Mznq0r3FJrkWyzmdzWsGlL61edPsTgB11JnTUDk0yjGnw_h4/exec?page=register';
-
-    async function main() {
-      await liff.init({ liffId: LIFF_ID });
-
-      if (!liff.isLoggedIn()) {
-        liff.login();
-      }
-    }
-
-    document.getElementById('registerForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      try {
-        const profile = await liff.getProfile();
-
-        const data = {
-          userId: profile.userId,
-          name: document.getElementById('name').value.trim(),
-          birthday: document.getElementById('birthday').value,
-          gender: document.getElementById('gender').value,
-          phone: document.getElementById('phone').value.trim(),
-          address: document.getElementById('address').value.trim(),
-          idNumber: document.getElementById('idNumber').value.trim(),
-          memberLevel: '一般會員',
-          totalPoints: 0
-        };
-
-        const res = await fetch(GAS_API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-        const result = await res.json();
-        alert(result.message);
-        if (result.success) {
-          // 註冊成功後跳回首頁或會員資料等頁
-          window.location.href = 'index.html?page=profile';
-        }
-      } catch (error) {
-        alert('註冊失敗，請稍後再試');
-        console.error(error);
-      }
-    });
-
-    main();
+    // 如果需要自動取得 LINE ID，可在此初始化 LIFF
+    // liff.init({ liffId: '你的 LIFF ID' }).then(() => {
+    //   return liff.getProfile();
+    // }).then(profile => {
+    //   // 可把 profile.userId 傳到後端
+    // }).catch(err => console.error(err));
   </script>
 </body>
 </html>
