@@ -49,3 +49,8 @@ button {
 button:hover {
   background-color: #009900;
 }
+/* 讓標題置中且有間距 */
+h2 {
+  text-align: center;
+  margin-bottom: 24px;
+}
