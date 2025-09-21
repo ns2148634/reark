@@ -10,7 +10,7 @@ body {
   box-sizing: border-box;
 }
 
-/* 新增外框容器 */
+/* 外框容器置中與樣式 */
 .register-container {
   width: 90%;
   max-width: 400px;
@@ -19,15 +19,17 @@ body {
   padding: 20px;
   box-shadow: 0 0 10px #ddd;
   box-sizing: border-box;
+  margin: 40px auto; /* 上方距離40px，水平置中 */
 }
 
-/* 調整 h2 使其置中並與表單間距一致 */
+/* 標題置中 */
 .register-container h2 {
-  text-align: center;
+  text-align: center !important;
   margin-bottom: 24px;
+  width: 100%;
 }
 
-/* 調整表單為滿寬度 */
+/* 表單100%寬度 */
 form#registerForm {
   width: 100%;
 }
@@ -57,6 +59,7 @@ button {
   font-weight: bold;
   border: none;
   cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 button:hover {
