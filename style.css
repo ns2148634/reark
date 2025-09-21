@@ -65,3 +65,72 @@ button {
 button:hover {
   background-color: #009900;
 }
+.profile-container {
+  max-width: 480px;
+  margin: 40px auto;
+  background: #fff;
+  padding: 30px 20px;
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgb(0 0 0 / 6%);
+  font-family: Arial, sans-serif;
+}
+
+.profile-container h2 {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.profile-container input[disabled] {
+  background-color: #f5f5f5;
+  color: #999;
+}
+
+.profile-container input,
+.profile-container select {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.profile-container label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.profile-container .buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.profile-container button {
+  flex: 1;
+  padding: 12px 0;
+  font-size: 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.profile-container button#editBtn {
+  background-color: #4791db;
+  color: white;
+}
+
+.profile-container button#saveBtn {
+  background-color: #00c300;
+  color: white;
+}
+
+.profile-container button#cancelBtn {
+  background-color: #f44336;
+  color: white;
+}
+
