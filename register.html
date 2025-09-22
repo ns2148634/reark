@@ -8,71 +8,73 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
-    <div class="register-container">
-  <h2>會員註冊</h2>
-  <form id="registerForm">
-    <label for="name">姓名</label>
-    <input type="text" id="name" name="name" required />
+  <div class="register-container">
+    <h2>會員註冊</h2>
+    <form id="registerForm">
+      <label for="name">姓名</label>
+      <input type="text" id="name" name="name" required />
 
-    <label for="idNumber">身份證字號</label>
-    <input type="text" id="idNumber" name="idNumber" maxlength="10" required pattern="^[A-Z][12]\d{8}$" placeholder="A123456789" />
+      <label for="idNumber">身份證字號</label>
+      <input type="text" id="idNumber" name="idNumber" maxlength="10" required pattern="^[A-Z][12]\d{8}$" placeholder="A123456789" />
 
-    <label for="birthday">生日</label>
-    <input type="date" id="birthday" name="birthday" required />
+      <label for="birthday">生日</label>
+      <input type="date" id="birthday" name="birthday" required />
 
-    <label for="gender">性別</label>
-    <select id="gender" name="gender" required>
-      <option value="">請選擇</option>
-      <option value="男">男</option>
-      <option value="女">女</option>
-    </select>
+      <label for="gender">性別</label>
+      <select id="gender" name="gender" required>
+        <option value="">請選擇</option>
+        <option value="男">男</option>
+        <option value="女">女</option>
+        <option value="其他">其他</option>
+      </select>
 
-    <label for="phone">手機號碼</label>
-    <input type="tel" id="phone" name="phone" pattern="09\d{8}" required placeholder="09xxxxxxxx" />
+      <label for="phone">手機號碼</label>
+      <input type="tel" id="phone" name="phone" pattern="09\d{8}" required placeholder="09xxxxxxxx" />
 
-    <label for="addressCity">居住城市</label>
-    <select id="addressCity" name="addressCity" required>
-      <option value="">請選擇城市</option>
-      <option value="基隆市">基隆市</option>
-      <option value="台北市">台北市</option>
-      <option value="新北市">新北市</option>
-      <option value="桃園市">桃園市</option>
-      <option value="新竹市">新竹市</option>
-      <option value="新竹縣">新竹縣</option>
-      <option value="苗栗縣">苗栗縣</option>
-      <option value="台中市">台中市</option>
-      <option value="彰化縣">彰化縣</option>
-      <option value="南投縣">南投縣</option>
-      <option value="雲林縣">雲林縣</option>
-      <option value="嘉義市">嘉義市</option>
-      <option value="嘉義縣">嘉義縣</option>
-      <option value="台南市">台南市</option>
-      <option value="高雄市">高雄市</option>
-      <option value="屏東縣">屏東縣</option>
-      <option value="台東縣">台東縣</option>
-      <option value="花蓮縣">花蓮縣</option>
-      <option value="宜蘭縣">宜蘭縣</option>
-      <option value="澎湖縣">澎湖縣</option>
-      <option value="金門縣">金門縣</option>
-      <option value="連江縣">連江縣</option>
-    </select>
+      <label for="registerLocation">註冊據點</label>
+      <select id="registerLocation" name="registerLocation" required>
+        <option value="">請選擇註冊據點</option>
+        <option value="台北富豪">台北富豪</option>
+      </select>
 
-    <label for="addressDistrict">居住區域</label>
-    <select id="addressDistrict" name="addressDistrict" required>
-      <option value="">請先選擇城市</option>
-    </select>
+      <label for="addressCity">居住城市</label>
+      <select id="addressCity" name="addressCity" required>
+        <option value="">請選擇城市</option>
+        <option value="基隆市">基隆市</option>
+        <option value="台北市">台北市</option>
+        <option value="新北市">新北市</option>
+        <option value="桃園市">桃園市</option>
+        <option value="新竹市">新竹市</option>
+        <option value="新竹縣">新竹縣</option>
+        <option value="苗栗縣">苗栗縣</option>
+        <option value="台中市">台中市</option>
+        <option value="彰化縣">彰化縣</option>
+        <option value="南投縣">南投縣</option>
+        <option value="雲林縣">雲林縣</option>
+        <option value="嘉義市">嘉義市</option>
+        <option value="嘉義縣">嘉義縣</option>
+        <option value="台南市">台南市</option>
+        <option value="高雄市">高雄市</option>
+        <option value="屏東縣">屏東縣</option>
+        <option value="台東縣">台東縣</option>
+        <option value="花蓮縣">花蓮縣</option>
+        <option value="宜蘭縣">宜蘭縣</option>
+        <option value="澎湖縣">澎湖縣</option>
+        <option value="金門縣">金門縣</option>
+        <option value="連江縣">連江縣</option>
+      </select>
 
-    <label for="addressDetail">詳細地址</label>
-    <input type="text" id="addressDetail" name="addressDetail" placeholder="如街道門牌" required />
+      <label for="addressDistrict">居住區域</label>
+      <select id="addressDistrict" name="addressDistrict" required>
+        <option value="">請先選擇城市</option>
+      </select>
 
-    <label for="registerLocation">註冊據點</label>
-    <select id="registerLocation" name="registerLocation" required>
-      <option value="">請選擇註冊據點</option>
-      <option value="台北富豪">台北富豪</option>
-    </select>
+      <label for="addressDetail">詳細地址</label>
+      <input type="text" id="addressDetail" name="addressDetail" placeholder="如街道門牌" required />
 
-    <button type="submit">送出</button>
-  </form>
+      <button type="submit">送出</button>
+    </form>
+  </div>
 
   <script>
     const districtData = {
@@ -122,30 +124,28 @@
       });
     });
 
+    let liffID = '';
+
+    // 初始化 LIFF，取得 userId
+    window.onload = () => {
+      if (window.liff) {
+        liff.init({ liffId: '2008128192-ANzL1oyW' }).then(() => {
+          if (liff.isLoggedIn()) {
+            liff.getProfile().then(profile => {
+              liffID = profile.userId;
+            });
+          } else {
+            liff.login();
+          }
+        });
+      }
+    };
+
     document.getElementById('registerForm').addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      if (!window.liff) {
-        alert('請在 LINE APP 中開啟本頁');
-        return;
-      }
-
-      let userId = '';
-      try {
-        await liff.init({ liffId: '2008128192-ANzL1oyW' });
-        if (!liff.isLoggedIn()) {
-          liff.login();
-          return;
-        }
-        const profile = await liff.getProfile();
-        userId = profile.userId;
-      } catch (error) {
-        alert('無法取得 LINE 用戶資料，請稍後再試');
-        return;
-      }
-
       const data = {
-        userId: userId,
+        userId: liffID,
         name: document.getElementById('name').value.trim(),
         idNumber: document.getElementById('idNumber').value.trim(),
         birthday: document.getElementById('birthday').value,
@@ -158,7 +158,7 @@
       };
 
       try {
-        const res = await fetch('https://script.google.com/macros/s/AKfycbztaK2IQ9rJqnzPLUL1Mznq0r3FJrkWyzmdzWsGlL61edPsTgB11JnTUDk0yjGnw_h4/exec', {
+        const res = await fetch('https://script.google.com/macros/s/你的部署ID/exec', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ page: 'register', ...data })
@@ -175,6 +175,5 @@
       }
     });
   </script>
-      </div>
 </body>
 </html>
