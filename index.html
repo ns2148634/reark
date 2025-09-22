@@ -11,7 +11,10 @@
   <form id="registerForm">
     <label for="name">姓名</label>
     <input type="text" id="name" name="name" required />
-
+    
+    <label for="idNumber">身份證字號</label>
+    <input type="text" id="idNumber" name="idNumber" maxlength="10" required pattern="^[A-Z][12]\d{8}$" placeholder="A123456789" />
+    
     <label for="birthday">生日</label>
     <input type="date" id="birthday" name="birthday" required />
 
@@ -19,20 +22,13 @@
     <select id="gender" name="gender" required>
       <option value="">請選擇</option>
       <option value="男">男</option>
-      <option value="女">女</option>
-      <option value="其他">其他</option>
+      <option value="女">女</option>    
     </select>
 
     <label for="phone">手機號碼</label>
     <input type="tel" id="phone" name="phone" pattern="09\d{8}" required placeholder="09xxxxxxxx" />
 
-    <label for="registerLocation">註冊據點</label>
-    <select id="registerLocation" name="registerLocation" required>
-      <option value="">請選擇註冊據點</option>
-      <option value="台北富豪">台北富豪</option>
-    </select>
-
-    <label for="addressCity">居住城市</label>
+     <label for="addressCity">居住城市</label>
     <select id="addressCity" name="addressCity" required>
       <option value="">請選擇城市</option>
       <option value="基隆市">基隆市</option>
@@ -66,10 +62,7 @@
 
     <label for="addressDetail">詳細地址</label>
     <input type="text" id="addressDetail" name="addressDetail" placeholder="如街道門牌" required />
-
-    <label for="idNumber">身份證字號</label>
-    <input type="text" id="idNumber" name="idNumber" maxlength="10" required pattern="^[A-Z][12]\d{8}$" placeholder="A123456789" />
-
+   
     <button type="submit">送出</button>
   </form>
 
@@ -102,7 +95,13 @@
 
     const citySelect = document.getElementById('addressCity');
     const districtSelect = document.getElementById('addressDistrict');
-
+    
+   <label for="registerLocation">註冊據點</label>
+    <select id="registerLocation" name="registerLocation" required>
+      <option value="">請選擇註冊據點</option>
+      <option value="台北富豪">台北富豪</option>
+    </select>
+    
     citySelect.addEventListener('change', () => {
       const city = citySelect.value;
       districtSelect.innerHTML = '';
