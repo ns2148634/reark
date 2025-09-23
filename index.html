@@ -21,6 +21,7 @@
         await liff.init({ liffId: LIFF_ID });
       } catch (e) {
         document.getElementById('content').innerHTML = '<h3>LIFF 初始化失敗，請透過 LINE App 開啟本頁。</h3>';
+        console.error('LIFF 初始化失敗', e);
         return;
       }
 
@@ -34,35 +35,41 @@
         profile = await liff.getProfile();
       } catch (e) {
         document.getElementById('content').innerHTML = '<h3>取得用戶資料失敗，請重新整理本頁。</h3>';
+        console.error('取得用戶資料失敗', e);
         return;
       }
 
       const userId = profile.userId;
+      if (!userId) {
+        document.getElementById('content').innerHTML = '<h3>用戶ID取得失敗，請用LINE重新登入。</h3>';
+        console.error('userId 取得為空');
+        return;
+      }
+
       const params = new URLSearchParams(window.location.search);
       const page = params.get('page');
 
       try {
         const res = await fetch(`${GAS_API_URL}?page=checkmember&userId=${encodeURIComponent(userId)}`);
-        if (!res.ok) throw new Error('API 呼叫失敗');
+        if (!res.ok) throw new Error(`API 回應錯誤: ${res.status} ${res.statusText}`);
+
         const data = await res.json();
+        console.log('checkMember 回傳:', data);
 
         if (data.isMember) {
-          // 已是會員，依 page 參數跳轉
           if (page === 'profile') {
             window.location.href = 'profile.html';
           } else if (page === 'register') {
             window.location.href = 'register.html';
           } else {
-            // 預設會員頁
             window.location.href = 'profile.html';
           }
         } else {
-          // 非會員統一跳註冊頁
           window.location.href = 'register.html';
         }
       } catch (e) {
         document.getElementById('content').innerHTML = `<h3>伺服器或網路錯誤，請稍後再試。</h3>`;
-        console.error(e);
+        console.error('API 請求或資料處理錯誤', e);
       }
     }
 
