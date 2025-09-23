@@ -168,7 +168,7 @@
       submitBtn.disabled = true; // 禁用按鈕防止重複送出
 
       try {
-        const res = await fetch('https://script.google.com/macros/s/你的部署ID/exec', {
+        const res = await fetch('https://script.google.com/macros/s/AKfycbztaK2IQ9rJqnzPLUL1Mznq0r3FJrkWyzmdzWsGlL61edPsTgB11JnTUDk0yjGnw_h4/exec', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ page: 'register', ...data })
