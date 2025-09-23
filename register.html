@@ -482,7 +482,7 @@
     // 初始化 LIFF，取得 userId
     window.onload = () => {
       if (window.liff) {
-        liff.init({ liffId: '你的LIFF_ID' }).then(() => {
+        liff.init({ liffId: '2008128192-ANzL1oyW' }).then(() => {
           if (liff.isLoggedIn()) {
             liff.getProfile().then((profile) => {
               liffID = profile.userId;
@@ -523,7 +523,7 @@
       submitBtn.disabled = true;
 
       try {
-        const res = await fetch('你的 GAS WebApp URL', {
+        const res = await fetch('https://script.google.com/macros/s/AKfycbztaK2IQ9rJqnzPLUL1Mznq0r3FJrkWyzmdzWsGlL61edPsTgB11JnTUDk0yjGnw_h4/exec', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ page: 'register', ...data }),
