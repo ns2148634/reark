@@ -25,7 +25,7 @@
         <option value="">請選擇</option>
         <option value="男">男</option>
         <option value="女">女</option>
-             </select>
+      </select>
 
       <label for="phone">手機號碼</label>
       <input type="tel" id="phone" name="phone" pattern="09\d{8}" required placeholder="09xxxxxxxx" />
@@ -71,7 +71,7 @@
       <label for="addressDetail">詳細地址</label>
       <input type="text" id="addressDetail" name="addressDetail" placeholder="如街道門牌" required />
 
-      <button type="submit">送出</button>
+      <button type="submit" id="submitBtn">送出</button>
     </form>
   </div>
 
@@ -132,6 +132,7 @@
           if (liff.isLoggedIn()) {
             liff.getProfile().then(profile => {
               liffID = profile.userId;
+              console.log('LIFF userId:', liffID);
             });
           } else {
             liff.login();
@@ -142,6 +143,11 @@
 
     document.getElementById('registerForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      if (!liffID) {
+        alert('尚未取得 LINE 用戶 ID，請用 LINE 開啟本頁並重試');
+        return;
+      }
 
       const data = {
         userId: liffID,
@@ -156,8 +162,13 @@
         totalPoints: 0
       };
 
+      console.log('送出註冊資料:', data);
+
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true; // 禁用按鈕防止重複送出
+
       try {
-        const res = await fetch('https://script.google.com/macros/s/AKfycbztaK2IQ9rJqnzPLUL1Mznq0r3FJrkWyzmdzWsGlL61edPsTgB11JnTUDk0yjGnw_h4/exec', {
+        const res = await fetch('https://script.google.com/macros/s/你的部署ID/exec', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ page: 'register', ...data })
@@ -167,10 +178,13 @@
         alert(result.message);
         if (result.success) {
           window.location.href = 'profile.html';
+        } else {
+          submitBtn.disabled = false; // 失敗解禁按鈕
         }
       } catch (err) {
         alert('註冊失敗，請稍後重試');
         console.error(err);
+        submitBtn.disabled = false; // 失敗解禁按鈕
       }
     });
   </script>
