@@ -1,78 +1,50 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>會員入口</title>
-  <link rel="stylesheet" href="./style.css" />
+  <meta charset="utf-8"/>
+  <title>會員專區</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body{font-family:sans-serif;margin:0;padding:8vw;background:#fafafa;}
+    .container{max-width:500px;margin:0 auto;}
+    .card{background:#fff;padding:7vw;border-radius:6vw;box-shadow:0 2vw 5vw #0002;margin-top:10vw;}
+    .btn{margin-top:4vw;padding:3vw 0vw;border:none;border-radius:3vw;width:100%;font-size:5vw;background:#4caf50;color:#fff;}
+    label{display:block;}
+    .info{margin:5vw 0;}
+  </style>
 </head>
 <body>
-  <div id="content">
-    <h2>方舟載入中，請稍候...</h2>
+  <div class="container">
+    <div id="loading">載入中...</div>
+    <div id="memberArea" style="display:none"></div>
+    <div id="registerArea" style="display:none">
+      <%== include('register') %>
+    </div>
   </div>
-
   <script>
-    const LIFF_ID = '2008128192-ANzL1oyW';  // 請替換你的LIFF ID
-    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbztaK2IQ9rJqnzPLUL1Mznq0r3FJrkWyzmdzWsGlL61edPsTgB11JnTUDk0yjGnw_h4/exec'; // 你的GAS Web App URL
-
-    async function main() {
-      try {
-        await liff.init({ liffId: LIFF_ID });
-      } catch (e) {
-        document.getElementById('content').innerHTML = '<h3>LIFF 初始化失敗，請透過 LINE App 開啟本頁。</h3>';
-        console.error('LIFF 初始化失敗', e);
-        return;
-      }
-
-      if (!liff.isLoggedIn()) {
-        liff.login();
-        return;
-      }
-
-      let profile;
-      try {
-        profile = await liff.getProfile();
-      } catch (e) {
-        document.getElementById('content').innerHTML = '<h3>取得用戶資料失敗，請重新整理本頁。</h3>';
-        console.error('取得用戶資料失敗', e);
-        return;
-      }
-
-      const userId = profile.userId;
-      if (!userId) {
-        document.getElementById('content').innerHTML = '<h3>用戶ID取得失敗，請用LINE重新登入。</h3>';
-        console.error('userId 取得為空');
-        return;
-      }
-
-      const params = new URLSearchParams(window.location.search);
-      const page = params.get('page');
-
-      try {
-        const res = await fetch(`${GAS_API_URL}?page=checkmember&userId=${encodeURIComponent(userId)}`);
-        if (!res.ok) throw new Error(`API 回應錯誤: ${res.status} ${res.statusText}`);
-
-        const data = await res.json();
-        console.log('checkMember 回傳:', data);
-
-        if (data.isMember) {
-          if (page === 'profile') {
-            window.location.href = 'profile.html';
-          } else if (page === 'register') {
-            window.location.href = 'register.html';
-          } else {
-            window.location.href = 'profile.html';
-          }
-        } else {
-          window.location.href = 'register.html';
+    async function main(){
+      await liff.init({ liffId: '2008128192-ANzL1oyW' });
+      if(!liff.isLoggedIn()){ liff.login(); return; }
+      const profile = await liff.getProfile();
+      const lineID = profile.userId;
+      google.script.run.withSuccessHandler(function(data){
+        document.getElementById('loading').style.display = 'none';
+        if(data){
+          showMemberData(data);
+        }else{
+          document.getElementById('registerArea').style.display = '';
+          document.getElementById('reg_lineID').value = lineID;
         }
-      } catch (e) {
-        document.getElementById('content').innerHTML = `<h3>伺服器或網路錯誤，請稍後再試。</h3>`;
-        console.error('API 請求或資料處理錯誤', e);
-      }
+      }).checkMember(lineID);
     }
-
+    function showMemberData(data){
+      let html = `<div class="card"><h2>會員資料</h2><div class="info">`;
+      html += `姓名：${data.name}<br/>身份證字號：${data.idNumber}<br/>生日：${data.birthday}<br/>性別：${data.gender}<br/>手機：${data.phone}<br/>地址：${data.city}${data.district}${data.address}<br/>註冊據點：${data.site}`;
+      html += `</div></div>`;
+      document.getElementById('memberArea').innerHTML = html;
+      document.getElementById('memberArea').style.display = '';
+    }
     window.onload = main;
   </script>
 </body>
