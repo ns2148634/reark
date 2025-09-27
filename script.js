@@ -1,5 +1,5 @@
 const LIFF_ID = '2008128192-ANzL1oyW';  // 請換成你的LIFF ID
-const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbztaK2IQ9rJqnzPLUL1Mznq0r3FJrkWyzmdzWsGlL61edPsTgB11JnTUDk0yjGnw_h4/exec?page=register';
+const GAS_API_URL = 'https://reark.ewn-utt.workers.dev/';
 
 async function main() {
   try {
