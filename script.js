@@ -1,54 +1,53 @@
-const LIFF_ID = '2008128192-ANzL1oyW';  // 請換成你的LIFF ID
-const GAS_API_URL = 'https://reark.ewn-utt.workers.dev/';
+const API_BASE = "https://reark.ewn-utt.workers.dev/";
 
-async function main() {
-  try {
-    await liff.init({ liffId: LIFF_ID });
-    if (!liff.isLoggedIn()) {
-      liff.login();
-    }
-    console.log('LIFF初始化成功');
-  } catch (error) {
-    console.error('LIFF初始化失敗:', error);
-    alert('LIFF初始化失敗，請稍後再試');
-  }
+// 會員查詢
+async function getMember(userId) {
+  const res = await fetch(`${API_BASE}/members?userId=${encodeURIComponent(userId)}`);
+  return await res.json(); // 回傳 { values: [...] }
 }
 
-document.getElementById('registerForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
+// 會員註冊
+async function registerMember(data) {
+  const res = await fetch(`${API_BASE}/members`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+  return await res.json();
+}
 
-  try {
-    const profile = await liff.getProfile();
-    const data = {
-      userId: profile.userId,
-      name: document.getElementById('name').value.trim(),
-      birthday: document.getElementById('birthday').value,
-      gender: document.getElementById('gender').value,
-      phone: document.getElementById('phone').value.trim(),
-      address: document.getElementById('address').value.trim(),
-      idNumber: document.getElementById('idNumber').value.trim(),
-      memberLevel: '一般會員',
-      totalPoints: 0
-    };
+// 預約設備
+async function reserveDevice(data) {
+  const res = await fetch(`${API_BASE}/reservations`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+  return await res.json();
+}
 
-    const res = await fetch(GAS_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    });
+// 預約查詢
+async function getReservations(userId) {
+  const res = await fetch(`${API_BASE}/reservations?userId=${encodeURIComponent(userId)}`);
+  return await res.json();
+}
 
-    const result = await res.json();
-    alert(result.message);
+// 修改預約（需 rowIndex 與新資料）
+async function updateReservation(rowIndex, updatedData) {
+  const res = await fetch(`${API_BASE}/reservations`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ rowIndex, updatedData })
+  });
+  return await res.json();
+}
 
-    if (result.success) {
-      // 註冊成功處理，你可以加入跳轉
-    }
-  } catch (e) {
-    alert('註冊失敗，請稍後再試');
-    console.error(e);
-  }
-});
-
-main();
+// 修改會員（範例，需 rowIndex 與新資料）
+async function updateMember(rowIndex, updatedData) {
+  const res = await fetch(`${API_BASE}/members`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ rowIndex, updatedData })
+  });
+  return await res.json();
+}
