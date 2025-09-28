@@ -1,51 +1,61 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
-  <meta charset="utf-8"/>
-  <title>會員專區</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <title>方舟會員系統</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="style.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <style>
-    body{font-family:sans-serif;margin:0;padding:8vw;background:#fafafa;}
-    .container{max-width:500px;margin:0 auto;}
-    .card{background:#fff;padding:7vw;border-radius:6vw;box-shadow:0 2vw 5vw #0002;margin-top:10vw;}
-    .btn{margin-top:4vw;padding:3vw 0vw;border:none;border-radius:3vw;width:100%;font-size:5vw;background:#4caf50;color:#fff;}
-    label{display:block;}
-    .info{margin:5vw 0;}
-  </style>
 </head>
 <body>
-  <div class="container">
-    <div id="loading">方舟會員系統載入中...</div>
-    <div id="memberArea" style="display:none"></div>
-    <div id="registerArea" style="display:none">
-      <%== include('register') %>
-    </div>
-  </div>
-  <script>
-    async function main(){
-      await liff.init({ liffId: '2008128192-ANzL1oyW' });
-      if(!liff.isLoggedIn()){ liff.login(); return; }
-      const profile = await liff.getProfile();
-      const lineID = profile.userId;
-      google.script.run.withSuccessHandler(function(data){
-        document.getElementById('loading').style.display = 'none';
-        if(data){
-          showMemberData(data);
-        }else{
-          document.getElementById('registerArea').style.display = '';
-          document.getElementById('reg_lineID').value = lineID;
-        }
-      }).checkMember(lineID);
-    }
-    function showMemberData(data){
-      let html = `<div class="card"><h2>會員資料</h2><div class="info">`;
-      html += `姓名：${data.name}<br/>身份證字號：${data.idNumber}<br/>生日：${data.birthday}<br/>性別：${data.gender}<br/>手機：${data.phone}<br/>地址：${data.city}${data.district}${data.address}<br/>註冊據點：${data.site}`;
-      html += `</div></div>`;
-      document.getElementById('memberArea').innerHTML = html;
-      document.getElementById('memberArea').style.display = '';
-    }
-    window.onload = main;
-  </script>
+  <main>
+    <section id="loading">方舟會員系統載入中...</section>
+    <section id="register" style="display:none;">
+      <h2>註冊會員</h2>
+      <form id="registerForm">
+        <input type="hidden" id="userId" name="userId">
+        <label for="name">姓名</label>
+        <input type="text" id="name" name="name" required>
+        <label for="idNumber">身份證字號</label>
+        <input type="text" id="idNumber" name="idNumber" maxlength="10" required>
+        <label for="birthday">生日</label>
+        <input type="date" id="birthday" name="birthday" required>
+        <label for="gender">性別</label>
+        <select id="gender" name="gender" required>
+          <option value="">請選擇</option>
+          <option value="男">男</option>
+          <option value="女">女</option>
+        </select>
+        <label for="phone">手機號碼</label>
+        <input type="tel" id="phone" name="phone" maxlength="10" required>
+        <label for="address">居住地址</label>
+        <input type="text" id="address" name="address" required>
+        <label for="branch">註冊據點</label>
+        <input type="text" id="branch" name="branch" required>
+        <button type="submit">送出註冊</button>
+      </form>
+    </section>
+    <section id="profile" style="display:none;">
+      <h2>會員資料</h2>
+      <div id="profileContent"></div>
+      <!-- 可加編輯功能 -->
+    </section>
+    <section id="booking" style="display:none;">
+      <h2>預約設備</h2>
+      <form id="bookingForm">
+        <input type="hidden" id="bookingUserId" name="userId">
+        <label for="equip">設備名稱</label>
+        <input type="text" id="equip" name="equip" required>
+        <label for="bookingTime">預約時間</label>
+        <input type="datetime-local" id="bookingTime" name="bookingTime" required>
+        <button type="submit">送出預約</button>
+      </form>
+    </section>
+    <section id="rservatiions" style="display:none;">
+      <h2>預約查詢</h2>
+      <div id="reservationsContent"></div>
+    </section>
+  </main>
+  <script src="script.js"></script>
 </body>
 </html>
