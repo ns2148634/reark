@@ -1,74 +1,170 @@
-<div class="card">
-  <h2>註冊會員</h2>
-  <form id="regForm" onsubmit="return submitReg(this)">
-    <input type="hidden" id="reg_lineID" name="lineID"/>
-    <label>姓名<input name="name" required maxlength="10" style="width:100%"></label>
-    <label>身份證字號<input name="idNumber" required maxlength="10" pattern="[A-Z][0-9]{9}" style="width:100%"></label>
-    <label>生日<input name="birthday" type="date" required style="width:100%"></label>
-    <label>性別
-      <select name="gender" required style="width:100%">
-        <option value="">請選擇</option>
-        <option value="男">男</option>
-        <option value="女">女</option>
-      </select>
-    </label>
-    <label>手機號碼<input name="phone" required pattern="09\d{8}" maxlength="10" style="width:100%"></label>
-    <label>居住城市
-      <select id="city" name="city" required style="width:100%" onchange="renderDistricts()">
-        <option>台北市</option>
-        <option>新北市</option>
-        <option>桃園市</option>
-        <option>台中市</option>
-        <option>台南市</option>
-        <option>高雄市</option>
-        <!-- 可擴充其他城市 -->
-      </select>
-    </label>
-    <label>行政區
-      <select id="district" name="district" required style="width:100%"></select>
-    </label>
-    <label>詳細住址<input name="address" maxlength="30" style="width:100%"></label>
-    <label>註冊據點
-      <select name="site" required style="width:100%">
-        <option>台北富豪</option>
-      </select>
-    </label>
-    <button class="btn" type="submit">送出註冊資料</button>
-  </form>
-</div>
-<script>
-const districts = {
-  '台北市': ['中正區','大同區','中山區','松山區','大安區','萬華區','信義區','士林區','北投區','內湖區','南港區','文山區'],
-  '新北市': ['板橋區','三重區','中和區','永和區','新莊區','新店區','樹林區','鶯歌區','三峽區','淡水區','汐止區','瑞芳區','土城區','蘆洲區','五股區','泰山區','林口區','深坑區','石碇區','坪林區','三芝區','石門區','八里區','平溪區','雙溪區','貢寮區','金山區','萬里區','烏來區'],
-  '桃園市': ['桃園區','中壢區','平鎮區','八德區','楊梅區','蘆竹區','大溪區','龍潭區','龜山區','大園區','觀音區','新屋區','復興區'],
-  '台中市': ['中區','東區','南區','西區','北區','北屯區','西屯區','南屯區','太平區','大里區','霧峰區','烏日區','豐原區','后里區','石岡區','東勢區','和平區','新社區','潭子區','大雅區','神岡區','大肚區','沙鹿區','龍井區','梧棲區','清水區','大甲區','外埔區','大安區'],
-  '台南市': ['中西區','東區','南區','北區','安平區','安南區','永康區','歸仁區','新化區','左鎮區','玉井區','楠西區','南化區','仁德區','關廟區','龍崎區','官田區','麻豆區','佳里區','西港區','七股區','將軍區','學甲區','北門區','新營區','後壁區','白河區','東山區','六甲區','下營區','柳營區','鹽水區','善化區','大內區','山上區','新市區','安定區'],
-  '高雄市': ['新興區','前金區','苓雅區','鹽埕區','鼓山區','旗津區','前鎮區','三民區','楠梓區','小港區','左營區','仁武區','大社區','岡山區','路竹區','阿蓮區','田寮區','燕巢區','橋頭區','梓官區','彌陀區','永安區','湖內區','鳳山區','大寮區','林園區','鳥松區','大樹區','旗山區','美濃區','六龜區','甲仙區','杉林區','內門區','茂林區','桃源區','那瑪夏區']
-};
-function renderDistricts(){
-  const city = document.getElementById('city').value;
-  const distSel = document.getElementById('district');
-  distSel.innerHTML = '';
-  (districts[city]).forEach(function(d){
-    let opt = document.createElement('option');
-    opt.textContent = d; distSel.appendChild(opt);
-  });
-}
-document.getElementById('city').addEventListener('change', renderDistricts);
-window.onload = renderDistricts;
-
-// 表單送出
-function submitReg(form){
-  const obj = Object.fromEntries(new FormData(form).entries());
-  google.script.run.withSuccessHandler(function(ret){
-    if(ret.success){
-      alert('註冊成功！');
-      location.reload();
-    }else{
-      alert('此LINE帳號已註冊，請直接進入會員專區');
-      location.reload();
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8"/>
+  <title>註冊會員</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    .form-container {
+      max-width: 400px;
+      margin: 48px auto 0 auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 3px 20px rgba(0,0,0,0.09);
+      padding: 32px 24px 24px 24px;
     }
-  }).registerMember(obj);
-  return false;
-}
-</script>
+    .form-container h2 {
+      text-align: center;
+      margin-bottom: 26px;
+      color: #009688;
+      font-weight: bold;
+      letter-spacing:2px;
+    }
+    #registerForm label {
+      display: block;
+      margin-bottom: 6px;
+      margin-top: 18px;
+      font-size: 1.04em;
+      color: #444;
+      font-weight: 600;
+    }
+    #registerForm input,
+    #registerForm select {
+      width: 100%;
+      padding: 13px;
+      border: 1.2px solid #eee;
+      border-radius: 7px;
+      margin-bottom: 7px;
+      background: #fafafc;
+      font-size: 1em;
+      box-sizing: border-box;
+      transition: border 0.15s;
+    }
+    #registerForm input:focus,
+    #registerForm select:focus {
+      border: 1.3px solid #009688;
+      background: #f2fefe;
+      outline: none;
+    }
+    #registerForm button {
+      width: 100%;
+      background: #009688;
+      color: #fff;
+      font-size: 1.13em;
+      border: none;
+      border-radius: 7px;
+      padding: 13px;
+      margin-top: 22px;
+      font-weight: bold;
+      letter-spacing: 2.5px;
+      cursor: pointer;
+      box-shadow: 0 2px 13px #00968811;
+      transition: background 0.2s;
+    }
+    #registerForm button:hover {
+      background: #00796b;
+    }
+  </style>
+</head>
+<body>
+  <section id="register">
+    <div class="form-container">
+      <h2>註冊會員</h2>
+      <form id="registerForm">
+        <input type="hidden" id="userId" name="userId">
+        <label for="name">姓名</label>
+        <input type="text" id="name" name="name" required>
+        <label for="idNumber">身份證字號</label>
+        <input type="text" id="idNumber" name="idNumber" maxlength="10" required>
+        <label for="birthday">生日</label>
+        <input type="date" id="birthday" name="birthday" required>
+        <label for="gender">性別</label>
+        <select id="gender" name="gender" required>
+          <option value="">請選擇</option>
+          <option value="男">男</option>
+          <option value="女">女</option>
+        </select>
+        <label for="phone">手機號碼</label>
+        <input type="tel" id="phone" name="phone" maxlength="10" required>
+        <label for="addressCity">居住城市</label>
+        <select id="addressCity" name="addressCity" required>
+          <option value="">請選擇</option>
+          <option value="台北市">台北市</option>
+          <option value="新北市">新北市</option>
+          <option value="桃園市">桃園市</option>
+          <option value="台中市">台中市</option>
+        </select>
+        <label for="addressDistrict">行政區</label>
+        <select id="addressDistrict" name="addressDistrict" required>
+          <option value="">請先選擇城市</option>
+        </select>
+        <label for="addressDetail">詳細地址</label>
+        <input type="text" id="addressDetail" name="addressDetail" required>
+        <label for="branch">註冊據點</label>
+        <select id="branch" name="branch" required>
+          <option value="台北富豪">台北富豪</option>
+        </select>
+        <button type="submit">送出註冊</button>
+      </form>
+    </div>
+  </section>
+  <script>
+    const liffId = '2008128192-ANzL1oyW';
+    const districts = {
+      "台北市": ["信義區","大安區","中山區","松山區","中正區","士林區","內湖區","南港區","文山區","萬華區","北投區","大同區"],
+      "新北市": ["板橋區","新莊區","中和區","永和區","三重區","土城區","蘆洲區","樹林區","三峽區","鶯歌區","淡水區","瑞芳區","五股區","泰山區","林口區","深坑區","石碇區","坪林區","三芝區","石門區","八里區","平溪區","雙溪區","貢寮區","金山區","萬里區","烏來區"],
+      "桃園市": ["桃園區","中壢區","平鎮區","八德區","楊梅區","蘆竹區","大溪區","龍潭區","龜山區","大園區","新屋區","觀音區","復興區"],
+      "台中市": ["中區","東區","南區","西區","北區","北屯區","西屯區","南屯區","太平區","大里區","霧峰區","烏日區","豐原區","后里區","石岡區","東勢區","和平區","新社區","潭子區","大雅區","神岡區","大肚區","沙鹿區","龍井區","梧棲區","清水區","大甲區","外埔區","大安區"]
+    };
+
+    document.getElementById("addressCity").addEventListener("change", function(){
+      const distSel = document.getElementById("addressDistrict");
+      distSel.innerHTML = '<option value="">請選擇行政區</option>';
+      const city = this.value;
+      if(districts[city]){
+        districts[city].forEach(d=>{
+          const op = document.createElement("option");
+          op.value = d; op.text = d;
+          distSel.appendChild(op);
+        });
+      }
+    });
+
+    // LIFF自動取得用戶id
+    window.addEventListener('DOMContentLoaded', async () => {
+      await liff.init({ liffId });
+      if (!liff.isLoggedIn()) liff.login();
+      const profile = await liff.getProfile();
+      document.getElementById("userId").value = profile.userId;
+    });
+
+    // 註冊送出
+    document.getElementById("registerForm").addEventListener("submit", async function(e){
+      e.preventDefault();
+      const data = {
+        userId: document.getElementById("userId").value,
+        name: document.getElementById("name").value,
+        idNumber: document.getElementById("idNumber").value,
+        birthday: document.getElementById("birthday").value,
+        gender: document.getElementById("gender").value,
+        phone: document.getElementById("phone").value,
+        address: document.getElementById("addressCity").value +
+                 document.getElementById("addressDistrict").value +
+                 document.getElementById("addressDetail").value,
+        branch: document.getElementById("branch").value
+      };
+      // 寫入API (需換成你的 worker api)
+      const res = await fetch("https://reark.ewn-utt.workers.dev/members", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(data)
+      });
+      const result = await res.json();
+      if(result.updates) alert("註冊成功！");
+      else alert("註冊失敗！");
+    });
+  </script>
+</body>
+</html>
