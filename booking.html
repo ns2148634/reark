@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8"/>
+  <title>預約設備</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+  <main>
+    <section id="booking">
+      <h2>預約設備（每30分鐘一時段）</h2>
+      <form id="bookingForm">
+        <input type="hidden" id="userId" name="userId">
+        <label for="bookDate">選擇日期</label>
+        <input type="date" id="bookDate" name="bookDate" required>
+        <label for="slot">預約時段</label>
+        <select id="slot" name="slot" required></select>
+        <button type="submit">送出預約</button>
+      </form>
+      <div id="bookingResult"></div>
+    </section>
+  </main>
+  <script>
+    // 載入可選時段
+    function genSlots(){
+      let slots = [];
+      let s = new Date();
+      s.setHours(11,0,0,0);
+      for(let i=0;i<18;i++){
+        let h = String(s.getHours()).padStart(2,"0");
+        let m = String(s.getMinutes()).padStart(2,"0");
+        slots.push(h+":"+m);
+        s.setMinutes(s.getMinutes()+30);
+      }
+      return slots;
+    }
+    async function liffInit() {
+      await liff.init({ liffId: '2008128192-ANzL1oyW' });
+      if (!liff.isLoggedIn()) liff.login();
+      let profile = await liff.getProfile();
+      return profile.userId;
+    }
+    async function fetchMember(userId){
+      let r = await fetch("https://reark.ewn-utt.workers.dev/members?userId=" + encodeURIComponent(userId));
+      return await r.json();
+    }
+    async function fetchReservations(userId, bookDate){
+      let r = await fetch("https://reark.ewn-utt.workers.dev/reservations?userId="+encodeURIComponent(userId)+"&date="+bookDate);
+      return await r.json();
+    }
+    async function fetchAllReservations(bookDate){
+      let r = await fetch("https://reark.ewn-utt.workers.dev/reservations?date="+bookDate);
+      return await r.json();
+    }
+    async function reserveDevice(data){
+      let r = await fetch("https://reark.ewn-utt.workers.dev/reservations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+      return await r.json();
+    }
+    // 依會員等級，已預約數目做檢查
+    async function checkAndSubmit(e){
+      e.preventDefault();
+      let resultDom = document.getElementById("bookingResult");
+      resultDom.textContent = "預約處理中…";
+      let userId = document.getElementById("userId").value;
+      let bookDate = document.getElementById("bookDate").value;
+      let slot = document.getElementById("slot").value;
+
+      // 查會員等級
+      let info = await fetchMember(userId);
+      if(!(info.values && info.values.length>1)){
+        resultDom.textContent = "尚未註冊會員。";
+        return;
+      }
+      let level = parseInt(info.values[1][9]); // J欄會員等級
+      if(isNaN(level)) level=1;
+
+      // 查今日該用戶所有預約
+      let my = await fetchReservations(userId, bookDate);
+      let count = my.values
+        ? my.values.filter((row,i)=>i>0 && row[1]===userId && row[2]===bookDate).length
+        : 0;
+      if(count>=level){
+        resultDom.textContent = `您的會員等級僅能預約${level}個時段，今天已預約達上限！`;
+        return;
+      }
+      // 查這個日期目前全部預約，檢查重複
+      let all = await fetchAllReservations(bookDate);
+      let taken = all.values
+        ? all.values.filter((row,i)=>i>0 && row[2]===bookDate).map(r=>r[3])
+        : [];
+      if(taken.includes(slot)){
+        resultDom.textContent = `您選擇的時段已被預約，請換其他時段！`;
+        return;
+      }
+      // 通過，寫入預約
+      const post = {
+        userId, //用戶ID
+        bookDate, //預約日期
+        slot, //預約時段
+        time: new Date().toISOString()
+      };
+      let res = await reserveDevice(post);
+      if(res.updates) resultDom.textContent = `預約完成！時段：${bookDate} ${slot}`;
+      else resultDom.textContent = "預約寫入失敗，請稍後重試。";
+    }
+    // 填入時段選項
+    window.addEventListener("DOMContentLoaded", async ()=>{
+      let userId = await liffInit();
+      document.getElementById("userId").value = userId;
+      let slotDom = document.getElementById("slot");
+      genSlots().forEach(t=>{
+        let o = document.createElement("option");
+        o.value = t; o.text = t;
+        slotDom.appendChild(o);
+      });
+      document.getElementById("bookingForm").onsubmit = checkAndSubmit;
+    });
+  </script>
+</body>
+</html>
