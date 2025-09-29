@@ -7,13 +7,17 @@
   <link rel="stylesheet" href="style.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    .form-container {max-width: 400px;margin: 48px auto 0 auto;background: #fff;border-radius: 16px;box-shadow: 0 3px 20px rgba(0,0,0,0.09);padding: 32px 24px 24px 24px;}
+    .form-container {max-width: 400px;margin: 48px auto 0 auto;background: #fff;border-radius: 16px;box-shadow: 0 3px 20px #00968822;padding: 32px 24px 24px 24px;}
     .form-container h2 {text-align: center;margin-bottom: 26px;color: #009688;font-weight: bold;letter-spacing:2px;}
     #registerForm label {display: block;margin-bottom: 6px;margin-top: 18px;font-size: 1em;color: #444;font-weight: 600;}
     #registerForm input, #registerForm select {width: 100%;padding: 13px;border: 1.2px solid #eee;border-radius: 7px;margin-bottom: 7px;background: #fafafc;font-size: 1em;box-sizing: border-box;transition: border 0.15s;}
     #registerForm input:focus, #registerForm select:focus {border: 1.3px solid #009688;background: #f2fefe;outline: none;}
     #registerForm button {width: 100%;background: #009688;color: #fff;font-size: 1.13em;border: none;border-radius: 7px;padding: 13px;margin-top: 22px;font-weight: bold;letter-spacing: 2.5px;cursor: pointer;box-shadow: 0 2px 13px #00968811;transition: background 0.2s;}
     #registerForm button:hover {background: #00796b;}
+    .profile-card {max-width: 410px;margin: 32px auto 24px auto;padding: 28px 21px 21px 28px;background:#fff;border-radius:16px;box-shadow:0 4px 28px #00968818;}
+    .profile-card-row {display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+    .profile-card-label {font-weight:700;letter-spacing:1.2px;color:#098;}
+    .profile-card-value {font-weight:500;color:#333;background:#edfcf7;padding:6px 18px;border-radius:9px;}
     .profile-btns {margin-top: 24px;text-align: center;}
     .profile-btns button {margin: 0 10px;padding: 10px 24px;font-size: 1.05em;border-radius: 8px;background: #ececec;color: #009688;border: 1px solid #009688;cursor: pointer;font-weight: bold;transition: color 0.2s, background 0.2s;}
     .profile-btns button:hover {color: #fff;background: #009688;}
@@ -70,8 +74,7 @@
   </main>
   <script>
     const liffId = '2008128192-ANzL1oyW';
-    const taiwanDistricts = {
-      "台北市":["中正區","大同區","中山區","松山區","大安區","萬華區","信義區","士林區","北投區","內湖區","南港區","文山區"],
+    const taiwanDistricts = { "台北市":["中正區","大同區","中山區","松山區","大安區","萬華區","信義區","士林區","北投區","內湖區","南港區","文山區"],
       "新北市":["板橋區","新莊區","中和區","永和區","三重區","土城區","蘆洲區","樹林區","三峽區","鶯歌區","淡水區","瑞芳區","五股區","泰山區","林口區","深坑區","石碇區","坪林區","三芝區","石門區","八里區","平溪區","雙溪區","貢寮區","金山區","萬里區","烏來區"],
       "桃園市":["桃園區","中壢區","平鎮區","八德區","楊梅區","蘆竹區","大溪區","龍潭區","龜山區","大園區","新屋區","觀音區","復興區"],
       "台中市":["中區","東區","南區","西區","北區","北屯區","西屯區","南屯區","太平區","大里區","霧峰區","烏日區","豐原區","后里區","石岡區","東勢區","和平區","新社區","潭子區","大雅區","神岡區","大肚區","沙鹿區","龍井區","梧棲區","清水區","大甲區","外埔區","大安區"],
@@ -112,18 +115,16 @@
       const userId = profile.userId;
       document.getElementById("userId").value = userId;
 
-      // 自動判斷是否已註冊
-      fetch("https://reark.ewn-utt.workers.dev/members?userId=" + userId)
-        .then(res => res.json())
-        .then(json => {
-          const values = json.values;
-          if (values.length > 1) {
-            showProfileSection(values); // 帶參數避免二次fetch
-            showPage("profile");
-          } else {
-            showPage("register");
-          }
-        });
+      // 查是否已註冊 (防止抓不到就重複)
+      fetch("https://reark.ewn-utt.workers.dev/members?userId=" + userId).then(res=>res.json()).then(json=>{
+        const values = json.values;
+        if (values.length > 1 && values[1][2]) {
+          showProfileSection(values);
+          showPage("profile");
+        } else {
+          showPage("register");
+        }
+      });
       document.getElementById("loading").style.display="none";
     });
 
@@ -141,10 +142,21 @@
       }
     });
 
+    // 註冊送出(防止重複註冊)
     document.getElementById("registerForm").addEventListener("submit", async function(e){
       e.preventDefault();
+      const userId = document.getElementById("userId").value;
+      const alreadyRes = await fetch("https://reark.ewn-utt.workers.dev/members?userId="+userId);
+      const alreadyJson = await alreadyRes.json();
+      if(alreadyJson.values && alreadyJson.values.length > 1 && alreadyJson.values[1][2]) {
+        alert("你已註冊過，不可重複註冊！將返回會員資料。");
+        showProfileSection(alreadyJson.values);
+        showPage("profile");
+        return;
+      }
+
       const data = {
-        userId: document.getElementById("userId").value,
+        userId: userId,
         name: document.getElementById("name").value,
         idNumber: document.getElementById("idNumber").value,
         birthday: document.getElementById("birthday").value,
@@ -162,7 +174,6 @@
       });
       const result = await res.json();
       if(result.updates || result.success) {
-        // 註冊完成直接關閉視窗回LINE
         const popup = document.createElement('div');
         popup.style = 'position:fixed;top:30%;left:50%;transform:translate(-50%,-50%);background:#fff;padding:30px 24px;border-radius:12px;box-shadow:0 4px 32px #00968822;z-index:1200;font-size:1.2em;color:#009688;font-weight:bold;text-align:center;';
         popup.innerHTML = "註冊成功！<br><button id='closeToLine' style='margin-top:25px;border:none;background:#009688;color:#fff;padding:10px 34px;font-size:1em;border-radius:8px;cursor:pointer;'>確定</button>";
@@ -176,7 +187,7 @@
       }
     });
 
-    // 顯示會員資料（只顯示 C 欄後欄位）
+    // 資料美化只顯示 C~K欄（會員卡片）
     function showProfileSection(valuesFromAPI) {
       let values = valuesFromAPI;
       if (!values) {
@@ -185,20 +196,54 @@
         .then(res => res.json())
         .then(json => showProfileSection(json.values));
       }
-      const labels = values["姓名","身份證字號","生日","性別","手機號碼","居住地址","註冊據點","會員等級","累計積點"]; 
-      const data = values[1].slice(2, 11);   // C到K欄
-      let html = '<ul style="list-style:none;padding:0;">';
+      const labels = ["姓名","身份證字號","生日","性別","手機號碼","居住地址","註冊據點","會員等級","累計積點"];
+      const data = values[1].slice(2, 11); // C~K
+      let html = `<div class="profile-card">`;
       labels.forEach((h,i)=>{
-        html += `<li style="margin-bottom:6px;"><b>${h}：</b> ${data[i]||''}</li>`;
+        html += `<div class="profile-card-row">
+          <span class="profile-card-label">${h}</span>
+          <span class="profile-card-value">${data[i]||''}</span>
+        </div>`;
       });
-      html += '</ul>';
+      html += `</div>`;
       document.getElementById("profileContent").innerHTML = html;
     }
 
     document.getElementById("backLineBtn").onclick = function(){
       liff.closeWindow();
     }
-    document.getElementById("editBtn").onclick = function(){
+    // 修改資料只帶入C~G欄
+    document.getElementById("editBtn").onclick = async function(){
+      const userId = document.getElementById("userId").value;
+      const res = await fetch("https://reark.ewn-utt.workers.dev/members?userId=" + userId);
+      const json = await res.json();
+      const data = json.values[1];
+      document.getElementById("name").value = data[2];
+      document.getElementById("idNumber").value = data[3];
+      document.getElementById("birthday").value = data[4];
+      document.getElementById("gender").value = data[5];
+      document.getElementById("phone").value = data[6];
+
+      // 地址解析
+      for(let c in taiwanDistricts) {
+        if(data[7] && data[7].indexOf(c)===0) {
+          document.getElementById("addressCity").value = c;
+          document.getElementById("addressDistrict").innerHTML = '<option value="">請選擇行政區</option>';
+          taiwanDistricts[c].forEach(d=>{
+            const op=document.createElement("option");
+            op.value=d; op.text=d;
+            document.getElementById("addressDistrict").appendChild(op);
+          });
+          let remainAddr = data[7].substring(c.length);
+          taiwanDistricts[c].forEach(dist=>{
+            if(remainAddr.indexOf(dist)===0) {
+              document.getElementById("addressDistrict").value = dist;
+              document.getElementById("addressDetail").value = remainAddr.substring(dist.length);
+            }
+          });
+        }
+      }
+      document.getElementById("branch").value = data[8];
       showPage("register");
     };
   </script>
