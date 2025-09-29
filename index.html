@@ -132,31 +132,43 @@
     });
 
     // 註冊提交（userId一起送，順序和表單一致）
-    document.getElementById("registerForm").addEventListener("submit", async function(e){
-      e.preventDefault();
-      const data = {
-        userId: document.getElementById("userId").value,
-        name: document.getElementById("name").value,
-        idNumber: document.getElementById("idNumber").value,
-        birthday: document.getElementById("birthday").value,
-        gender: document.getElementById("gender").value,
-        phone: document.getElementById("phone").value,
-        address: document.getElementById("addressCity").value +
-                 document.getElementById("addressDistrict").value +
-                 document.getElementById("addressDetail").value,
-        branch: document.getElementById("branch").value
-      };
-      const res = await fetch("https://reark.ewn-utt.workers.dev/members", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify(data)
-      });
-      const result = await res.json();
-      if(result.updates || result.success) {
-        alert("註冊成功！");
-        showProfileSection();
-      } else alert("註冊失敗！");
-    });
+   document.getElementById("registerForm").addEventListener("submit", async function(e){
+  e.preventDefault();
+  const data = {
+    userId: document.getElementById("userId").value,
+    name: document.getElementById("name").value,
+    idNumber: document.getElementById("idNumber").value,
+    birthday: document.getElementById("birthday").value,
+    gender: document.getElementById("gender").value,
+    phone: document.getElementById("phone").value,
+    address: document.getElementById("addressCity").value +
+             document.getElementById("addressDistrict").value +
+             document.getElementById("addressDetail").value,
+    branch: document.getElementById("branch").value
+  };
+  const res = await fetch("https://reark.ewn-utt.workers.dev/members", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify(data)
+  });
+  const result = await res.json();
+ if(result.updates || result.success) {
+  // 自訂完成彈窗
+  const popup = document.createElement('div');
+  popup.style = 'position:fixed;top:30%;left:50%;transform:translate(-50%,-50%);background:#fff;padding:30px 24px;border-radius:12px;box-shadow:0 4px 32px #00968822;z-index:1200;font-size:1.2em;color:#009688;font-weight:bold;text-align:center;';
+  popup.innerHTML = "註冊成功！<br><button id='closeToLine' style='margin-top:25px;border:none;background:#009688;color:#fff;padding:10px 34px;font-size:1em;border-radius:8px;cursor:pointer;'>確定</button>";
+  document.body.appendChild(popup);
+
+  document.getElementById("closeToLine").onclick = function(){
+    document.body.removeChild(popup);
+    liff.closeWindow(); // 關閉LIFF頁，直接回到LINE對話
+  };
+} else {
+  alert("註冊失敗！");
+}
+
+});
+
 
     // 顯示個人會員資料（查詢 userId）
     function showProfileSection() {
