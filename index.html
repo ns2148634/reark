@@ -185,7 +185,7 @@
         .then(res => res.json())
         .then(json => showProfileSection(json.values));
       }
-      const labels = values[0].slice(2, 11); // C到K欄
+      const labels = values["姓名","身份證字號","生日","性別","手機號碼","居住地址","註冊據點","會員等級","累計積點"]; 
       const data = values[1].slice(2, 11);   // C到K欄
       let html = '<ul style="list-style:none;padding:0;">';
       labels.forEach((h,i)=>{
