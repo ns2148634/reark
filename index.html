@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <title>方舟會員系統</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link rel="stylesheet" href="style.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     .form-container {max-width: 400px;margin: 48px auto 0 auto;background: #fff;border-radius: 16px;box-shadow: 0 3px 20px #00968822;padding: 32px 24px 24px 24px;}
@@ -28,7 +27,7 @@
     <section id="loading">方舟會員系統載入中...</section>
     <section id="register" style="display:none;">
       <div class="form-container">
-        <h2>註冊會員</h2>
+        <h2 id="formTitle">註冊會員</h2>
         <form id="registerForm">
           <input type="hidden" id="userId" name="userId">
           <label for="name">姓名</label>
@@ -59,7 +58,7 @@
           <select id="branch" name="branch" required>
             <option value="台北富豪">台北富豪</option>
           </select>
-          <button type="submit">送出註冊</button>
+          <button type="submit" id="submitBtn">送出註冊</button>
         </form>
       </div>
     </section>
@@ -96,14 +95,16 @@
       "澎湖縣":["馬公市","西嶼鄉","望安鄉","七美鄉","白沙鄉","湖西鄉"],
       "金門縣":["金沙鎮","金湖鎮","金寧鄉","金城鎮","烈嶼鄉","烏坵鄉"],
       "連江縣":["南竿鄉","北竿鄉","莒光鄉","東引鄉"]
-    };
+      };
+    let editRowIndex = null;
+    let editing = false;
 
     function showPage(sectionId){
       Array.from(document.querySelectorAll('main > section')).forEach(sec => sec.style.display='none');
       document.getElementById(sectionId).style.display = '';
     }
 
-    // 頁面載入自動驗證LINE ID &切換畫面
+    // 頁面載入自動判斷已註冊
     window.addEventListener('DOMContentLoaded', async () => {
       const citySel = document.getElementById("addressCity");
       Object.keys(taiwanDistricts).forEach(city=>{
@@ -115,7 +116,6 @@
       const userId = profile.userId;
       document.getElementById("userId").value = userId;
 
-      // 查是否已註冊 (防止抓不到就重複)
       fetch("https://reark.ewn-utt.workers.dev/members?userId=" + userId).then(res=>res.json()).then(json=>{
         const values = json.values;
         if (values.length > 1 && values[1][2]) {
@@ -142,82 +142,18 @@
       }
     });
 
-    // 註冊送出(防止重複註冊)
-    document.getElementById("registerForm").addEventListener("submit", async function(e){
-      e.preventDefault();
-      const userId = document.getElementById("userId").value;
-      const alreadyRes = await fetch("https://reark.ewn-utt.workers.dev/members?userId="+userId);
-      const alreadyJson = await alreadyRes.json();
-      if(alreadyJson.values && alreadyJson.values.length > 1 && alreadyJson.values[1][2]) {
-        alert("你已註冊過，不可重複註冊！將返回會員資料。");
-        showProfileSection(alreadyJson.values);
-        showPage("profile");
-        return;
-      }
-
-      const data = {
-        userId: userId,
-        name: document.getElementById("name").value,
-        idNumber: document.getElementById("idNumber").value,
-        birthday: document.getElementById("birthday").value,
-        gender: document.getElementById("gender").value,
-        phone: document.getElementById("phone").value,
-        address: document.getElementById("addressCity").value +
-                 document.getElementById("addressDistrict").value +
-                 document.getElementById("addressDetail").value,
-        branch: document.getElementById("branch").value
-      };
-      const res = await fetch("https://reark.ewn-utt.workers.dev/members", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify(data)
-      });
-      const result = await res.json();
-      if(result.updates || result.success) {
-        const popup = document.createElement('div');
-        popup.style = 'position:fixed;top:30%;left:50%;transform:translate(-50%,-50%);background:#fff;padding:30px 24px;border-radius:12px;box-shadow:0 4px 32px #00968822;z-index:1200;font-size:1.2em;color:#009688;font-weight:bold;text-align:center;';
-        popup.innerHTML = "註冊成功！<br><button id='closeToLine' style='margin-top:25px;border:none;background:#009688;color:#fff;padding:10px 34px;font-size:1em;border-radius:8px;cursor:pointer;'>確定</button>";
-        document.body.appendChild(popup);
-        document.getElementById("closeToLine").onclick = function(){
-          document.body.removeChild(popup);
-          liff.closeWindow();
-        };
-      } else {
-        alert("註冊失敗！");
-      }
-    });
-
-    // 資料美化只顯示 C~K欄（會員卡片）
-    function showProfileSection(valuesFromAPI) {
-      let values = valuesFromAPI;
-      if (!values) {
-        const userId = document.getElementById("userId").value;
-        return fetch("https://reark.ewn-utt.workers.dev/members?userId=" + userId)
-        .then(res => res.json())
-        .then(json => showProfileSection(json.values));
-      }
-      const labels = ["姓名","身份證字號","生日","性別","手機號碼","居住地址","註冊據點","會員等級","累計積點"];
-      const data = values[1].slice(2, 11); // C~K
-      let html = `<div class="profile-card">`;
-      labels.forEach((h,i)=>{
-        html += `<div class="profile-card-row">
-          <span class="profile-card-label">${h}</span>
-          <span class="profile-card-value">${data[i]||''}</span>
-        </div>`;
-      });
-      html += `</div>`;
-      document.getElementById("profileContent").innerHTML = html;
-    }
-
-    document.getElementById("backLineBtn").onclick = function(){
-      liff.closeWindow();
-    }
-    // 修改資料只帶入C~G欄
+    // 點「修改資料」自動填入(只填C~G欄)
     document.getElementById("editBtn").onclick = async function(){
+      editing = true;
       const userId = document.getElementById("userId").value;
       const res = await fetch("https://reark.ewn-utt.workers.dev/members?userId=" + userId);
       const json = await res.json();
-      const data = json.values[1];
+      const values = json.values;
+      const data = values[1];
+      editRowIndex = values.findIndex(r => r[1] === userId);
+
+      document.getElementById("formTitle").textContent = "修改會員資料";
+      document.getElementById("submitBtn").textContent = "送出修改";
       document.getElementById("name").value = data[2];
       document.getElementById("idNumber").value = data[3];
       document.getElementById("birthday").value = data[4];
@@ -246,6 +182,98 @@
       document.getElementById("branch").value = data[8];
       showPage("register");
     };
+
+    // 註冊/修改送出
+    document.getElementById("registerForm").addEventListener("submit", async function(e){
+      e.preventDefault();
+      const userId = document.getElementById("userId").value;
+      const data = {
+        userId: userId,
+        name: document.getElementById("name").value,
+        idNumber: document.getElementById("idNumber").value,
+        birthday: document.getElementById("birthday").value,
+        gender: document.getElementById("gender").value,
+        phone: document.getElementById("phone").value,
+        address: document.getElementById("addressCity").value +
+                 document.getElementById("addressDistrict").value +
+                 document.getElementById("addressDetail").value,
+        branch: document.getElementById("branch").value
+      };
+
+      if(editing && editRowIndex !== null) {
+        // PATCH：只改C~G、地址、據點（A欄註冊日期不動）
+        const patchData = { rowIndex: editRowIndex, updatedData: data };
+        const patchRes = await fetch("https://reark.ewn-utt.workers.dev/members", {
+          method: "PATCH",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify(patchData)
+        });
+        const result = await patchRes.json();
+        if(result.updatedRange) {
+          editing = false; editRowIndex = null;
+          document.getElementById("formTitle").textContent = "註冊會員";
+          document.getElementById("submitBtn").textContent = "送出註冊";
+          alert('會員資料已更新！');
+          location.reload();
+        } else {
+          alert('更新失敗！');
+        }
+      } else {
+        // 首次註冊送POST
+        const alreadyRes = await fetch("https://reark.ewn-utt.workers.dev/members?userId="+userId);
+        const alreadyJson = await alreadyRes.json();
+        if(alreadyJson.values && alreadyJson.values.length > 1 && alreadyJson.values[1][2]) {
+          alert("你已註冊過，不可重複註冊！將返回會員資料。");
+          showProfileSection(alreadyJson.values);
+          showPage("profile");
+          return;
+        }
+        const res = await fetch("https://reark.ewn-utt.workers.dev/members", {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        if(result.updates || result.success) {
+          const popup = document.createElement('div');
+          popup.style = 'position:fixed;top:30%;left:50%;transform:translate(-50%,-50%);background:#fff;padding:30px 24px;border-radius:12px;box-shadow:0 4px 32px #00968822;z-index:1200;font-size:1.2em;color:#009688;font-weight:bold;text-align:center;';
+          popup.innerHTML = "註冊成功！<br><button id='closeToLine' style='margin-top:25px;border:none;background:#009688;color:#fff;padding:10px 34px;font-size:1em;border-radius:8px;cursor:pointer;'>確定</button>";
+          document.body.appendChild(popup);
+          document.getElementById("closeToLine").onclick = function(){
+            document.body.removeChild(popup);
+            liff.closeWindow();
+          };
+        } else {
+          alert("註冊失敗！");
+        }
+      }
+    });
+
+    // profile美化
+    function showProfileSection(valuesFromAPI) {
+      let values = valuesFromAPI;
+      if (!values) {
+        const userId = document.getElementById("userId").value;
+        return fetch("https://reark.ewn-utt.workers.dev/members?userId=" + userId)
+        .then(res => res.json())
+        .then(json => showProfileSection(json.values));
+      }
+      const labels = ["姓名","身份證字號","生日","性別","手機號碼","居住地址","註冊據點","會員等級","累計積點"];
+      const data = values[1].slice(2, 11); // C~K
+      let html = `<div class="profile-card">`;
+      labels.forEach((h,i)=>{
+        html += `<div class="profile-card-row">
+          <span class="profile-card-label">${h}</span>
+          <span class="profile-card-value">${data[i]||''}</span>
+        </div>`;
+      });
+      html += `</div>`;
+      document.getElementById("profileContent").innerHTML = html;
+    }
+
+    document.getElementById("backLineBtn").onclick = function(){
+      liff.closeWindow();
+    }
   </script>
 </body>
 </html>
