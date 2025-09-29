@@ -4,11 +4,16 @@
   <meta charset="UTF-8" />
   <title>方舟會員系統</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="style.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body {background:#eef2f2;margin:0;padding:0;font-family:'Microsoft JhengHei',sans-serif;}
-    .form-container {max-width: 400px;margin: 48px auto 0 auto;background: #fff;border-radius: 16px;box-shadow: 0 3px 20px #00bea466;padding: 38px 26px 30px 26px;}
-    .form-container h2 {text-align: center;margin-bottom: 28px;color: #009688;font-weight: bold;letter-spacing:2px;}
+    .form-container {max-width: 400px;margin: 48px auto 0 auto;background: #fff;border-radius: 16px;box-shadow: 0 3px 20px #00968822;padding: 32px 24px 24px 24px;}
+    .form-container h2 {text-align: center;margin-bottom: 26px;color: #009688;font-weight: bold;letter-spacing:2px;}
+    #registerForm label {display: block;margin-bottom: 6px;margin-top: 18px;font-size: 1em;color: #444;font-weight: 600;}
+    #registerForm input, #registerForm select {width: 100%;padding: 13px;border: 1.2px solid #eee;border-radius: 7px;margin-bottom: 7px;background: #fafafc;font-size: 1em;box-sizing: border-box;transition: border 0.15s;}
+    #registerForm input:focus, #registerForm select:focus {border: 1.3px solid #009688;background: #f2fefe;outline: none;}
+    #registerForm button {width: 100%;background: #009688;color: #fff;font-size: 1.13em;border: none;border-radius: 7px;padding: 13px;margin-top: 22px;font-weight: bold;letter-spacing: 2.5px;cursor: pointer;box-shadow: 0 2px 13px #00968811;transition: background 0.2s;}
+    #registerForm button:hover {background: #00796b;}
     .profile-card {max-width: 410px;margin: 32px auto 24px auto;padding: 28px 21px 21px 28px;background:#fff;border-radius:16px;box-shadow:0 4px 28px #00968818;}
     .profile-card-row {display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
     .profile-card-label {font-weight:700;letter-spacing:1.2px;color:#098;}
@@ -16,26 +21,14 @@
     .profile-btns {margin-top: 24px;text-align: center;}
     .profile-btns button {margin: 0 10px;padding: 10px 24px;font-size: 1.05em;border-radius: 8px;background: #ececec;color: #009688;border: 1px solid #009688;cursor: pointer;font-weight: bold;transition: color 0.2s, background 0.2s;}
     .profile-btns button:hover {color: #fff;background: #009688;}
-    .main-box {max-width: 420px;margin: 38px auto;background: #fff;border-radius: 18px;box-shadow: 0 3px 24px #00bea466;padding: 38px 26px 30px 26px;}
-    .main-box h2 {text-align: center;margin-bottom: 28px;color: #00aca8;font-weight: bold;letter-spacing:2.5px;}
-    .form-row {display:flex;align-items:center;margin-bottom:22px;}
-    .label {width:88px;font-size:1.06em;color:#222;font-weight:700;}
-    .readonly-value,.input-value,select,.input-date {flex:1;border:1.15px solid #eee;border-radius:7px;padding:11px 10px;margin-left:13px;background:#fafcfc;font-size:1.07em;}
-    .readonly-value {background:#f3f5f5;color:#3a3a3a;}
-    .input-value:focus, select:focus, .input-date:focus {border:1.22px solid #00aea8;}
-    #bookingBtn {width:100%;background: #00aca8;color: #fff;font-size: 1.17em;border: none;border-radius: 7px;padding: 13px;margin-top: 13px;font-weight: bold;letter-spacing: 2.5px;cursor: pointer;box-shadow: 0 2px 13px #00bea422;transition: background 0.2s;}
-    #bookingBtn:disabled {background:#aaa;cursor:not-allowed;}
-    #bookingBtn:hover:not(:disabled){background:#049089;}
   </style>
 </head>
 <body>
   <main>
-    <section id="loading" style="margin:40px;text-align:center;font-size:20px;letter-spacing:1.5px;">方舟系統載入中...</section>
-
-    <!-- 註冊頁 -->
+    <section id="loading">方舟會員系統載入中...</section>
     <section id="register" style="display:none;">
       <div class="form-container">
-        <h2 id="formTitle">註冊會員</h2>
+        <h2>註冊會員</h2>
         <form id="registerForm">
           <input type="hidden" id="userId" name="userId">
           <label for="name">姓名</label>
@@ -66,62 +59,22 @@
           <select id="branch" name="branch" required>
             <option value="台北富豪">台北富豪</option>
           </select>
-          <button type="submit" id="submitBtn">送出註冊</button>
+          <button type="submit">送出註冊</button>
         </form>
       </div>
     </section>
-
-    <!-- 會員資料 -->
     <section id="profile" style="display:none;">
       <h2>會員資料</h2>
       <div id="profileContent"></div>
       <div class="profile-btns">
         <button id="backLineBtn">返回LINE</button>
         <button id="editBtn">修改資料</button>
-        <button id="toBookingBtn">預約設備</button>
-      </div>
-    </section>
-
-    <!-- 預約設備頁 -->
-    <section id="bookingSection" style="display:none;">
-      <div class="main-box">
-        <h2>預約設備</h2>
-        <form id="bookingForm">
-          <div class="form-row">
-            <span class="label">姓名</span>
-            <input type="text" id="bkName" class="readonly-value" readonly>
-          </div>
-          <div class="form-row">
-            <span class="label">手機</span>
-            <input type="text" id="bkPhone" class="readonly-value" readonly>
-          </div>
-          <div class="form-row">
-            <span class="label">據點</span>
-            <input type="text" id="bkBranch" class="readonly-value" readonly>
-          </div>
-          <div class="form-row">
-            <span class="label">預約日期</span>
-            <input type="date" id="bkDate" class="input-date" required>
-          </div>
-          <div class="form-row">
-            <span class="label">預約時段</span>
-            <select id="bkTime" required>
-              <option value="">請選擇日期</option>
-            </select>
-          </div>
-          <button type="submit" id="bookingBtn">確認預約</button>
-        </form>
       </div>
     </section>
   </main>
   <script>
     const liffId = '2008128192-ANzL1oyW';
-    let userId = null;
-    let editRowIndex = null;
-    let editing = false;
-    // 地址聯動資料
-    const taiwanDistricts = {
-      "台北市":["中正區","大同區","中山區","松山區","大安區","萬華區","信義區","士林區","北投區","內湖區","南港區","文山區"],
+    const taiwanDistricts = { "台北市":["中正區","大同區","中山區","松山區","大安區","萬華區","信義區","士林區","北投區","內湖區","南港區","文山區"],
       "新北市":["板橋區","新莊區","中和區","永和區","三重區","土城區","蘆洲區","樹林區","三峽區","鶯歌區","淡水區","瑞芳區","五股區","泰山區","林口區","深坑區","石碇區","坪林區","三芝區","石門區","八里區","平溪區","雙溪區","貢寮區","金山區","萬里區","烏來區"],
       "桃園市":["桃園區","中壢區","平鎮區","八德區","楊梅區","蘆竹區","大溪區","龍潭區","龜山區","大園區","新屋區","觀音區","復興區"],
       "台中市":["中區","東區","南區","西區","北區","北屯區","西屯區","南屯區","太平區","大里區","霧峰區","烏日區","豐原區","后里區","石岡區","東勢區","和平區","新社區","潭子區","大雅區","神岡區","大肚區","沙鹿區","龍井區","梧棲區","清水區","大甲區","外埔區","大安區"],
@@ -142,20 +95,51 @@
       "宜蘭縣":["宜蘭市","頭城鎮","礁溪鄉","壯圍鄉","員山鄉","羅東鎮","三星鄉","大同鄉","五結鄉","冬山鄉","蘇澳鎮","南澳鄉"],
       "澎湖縣":["馬公市","西嶼鄉","望安鄉","七美鄉","白沙鄉","湖西鄉"],
       "金門縣":["金沙鎮","金湖鎮","金寧鄉","金城鎮","烈嶼鄉","烏坵鄉"],
-      "連江縣":["南竿鄉","北竿鄉","莒光鄉","東引鄉"]
-    };
+      "連江縣":["南竿鄉","北竿鄉","莒光鄉","東引鄉"]};
 
     function showPage(sectionId){
       Array.from(document.querySelectorAll('main > section')).forEach(sec => sec.style.display='none');
       document.getElementById(sectionId).style.display = '';
     }
 
-    // 地址三級連動
+    window.addEventListener('DOMContentLoaded', async () => {
+      const citySel = document.getElementById("addressCity");
+      Object.keys(taiwanDistricts).forEach(city=>{
+        const op=document.createElement("option"); op.value=city; op.text=city; citySel.appendChild(op);
+      });
+      await liff.init({ liffId });
+      if (!liff.isLoggedIn()) liff.login();
+      const profile = await liff.getProfile();
+      const userId = profile.userId;
+      document.getElementById("userId").value = userId;
+
+      // 保證遍歷所有資料列
+      fetch("https://reark.ewn-utt.workers.dev/members?userId=" + userId).then(res=>res.json()).then(json=>{
+        const values = json.values;
+        let found = false;
+        let idx = -1;
+        for (let i = 1; i < values.length; i++) {
+          if (values[i][1] === userId && values[i][2]) {
+            found = true;
+            idx = i;
+            break;
+          }
+        }
+        if (found) {
+          showProfileSection(values, idx);
+          showPage("profile");
+        } else {
+          showPage("register");
+        }
+        document.getElementById("loading").style.display="none";
+      });
+    });
+
     document.getElementById("addressCity").addEventListener("change", function(){
-      const city=this.value;
       const distSel=document.getElementById("addressDistrict");
       distSel.innerHTML='<option value="">請選擇行政區</option>';
-      if(city && taiwanDistricts[city]){
+      const city=this.value;
+      if(taiwanDistricts[city]){
         taiwanDistricts[city].forEach(d=>{
           const op=document.createElement("option");
           op.value=d; op.text=d;
@@ -164,13 +148,23 @@
       }
     });
 
-    // 會員表、註冊流程...（見上一回覆）
-    // ...（原有 JS 請見上一回覆，同上述內容，不重複貼）
-    // ...
-
-    // 註冊時地址合併
     document.getElementById("registerForm").addEventListener("submit", async function(e){
       e.preventDefault();
+      const userId = document.getElementById("userId").value;
+      const alreadyRes = await fetch("https://reark.ewn-utt.workers.dev/members?userId="+userId);
+      const alreadyJson = await alreadyRes.json();
+      let already = false;
+      for (let i = 1; i < alreadyJson.values.length; i++) {
+        if (alreadyJson.values[i][1] === userId && alreadyJson.values[i][2]) {
+          already = true; break;
+        }
+      }
+      if (already) {
+        alert("你已註冊過，不可重複註冊！將返回會員資料。");
+        showProfileSection(alreadyJson.values, i);
+        showPage("profile");
+        return;
+      }
       const data = {
         userId: userId,
         name: document.getElementById("name").value,
@@ -178,19 +172,86 @@
         birthday: document.getElementById("birthday").value,
         gender: document.getElementById("gender").value,
         phone: document.getElementById("phone").value,
-        address: document.getElementById("addressCity").value+
-                 document.getElementById("addressDistrict").value+
+        address: document.getElementById("addressCity").value +
+                 document.getElementById("addressDistrict").value +
                  document.getElementById("addressDetail").value,
         branch: document.getElementById("branch").value
       };
-      // ...剩下JS見上一回覆
+      const res = await fetch("https://reark.ewn-utt.workers.dev/members", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(data)
+      });
+      const result = await res.json();
+      if(result.updates || result.success) {
+        const popup = document.createElement('div');
+        popup.style = 'position:fixed;top:30%;left:50%;transform:translate(-50%,-50%);background:#fff;padding:30px 24px;border-radius:12px;box-shadow:0 4px 32px #00968822;z-index:1200;font-size:1.2em;color:#009688;font-weight:bold;text-align:center;';
+        popup.innerHTML = "註冊成功！<br><button id='closeToLine' style='margin-top:25px;border:none;background:#009688;color:#fff;padding:10px 34px;font-size:1em;border-radius:8px;cursor:pointer;'>確定</button>";
+        document.body.appendChild(popup);
+        document.getElementById("closeToLine").onclick = function(){
+          document.body.removeChild(popup);
+          liff.closeWindow();
+        };
+      } else {
+        alert("註冊失敗！");
+      }
     });
 
-    // 編輯時自動將地址拆分到欄位
-    // ...（見上一回覆 editBtn, 註冊、修改、預約流程）
+    function showProfileSection(values, idx) {
+      const labels = ["姓名","身份證字號","生日","性別","手機號碼","居住地址","註冊據點","會員等級","累計積點"];
+      const data = values[idx].slice(2, 11);
+      let html = `<div class="profile-card">`;
+      labels.forEach((h,i)=>{
+        html += `<div class="profile-card-row">
+          <span class="profile-card-label">${h}</span>
+          <span class="profile-card-value">${data[i]||''}</span>
+        </div>`;
+      });
+      html += `</div>`;
+      document.getElementById("profileContent").innerHTML = html;
+    }
 
-    // 預約頁不需城市行政區（只需會員表抓 branch, name, phone），其餘 address 只用於註冊表單。
-    // 若會員頁要顯示詳細分割（城市/區/地址），可再根據address拆分加UI
+    document.getElementById("backLineBtn").onclick = function(){
+      liff.closeWindow();
+    }
+    document.getElementById("editBtn").onclick = async function(){
+      const userId = document.getElementById("userId").value;
+      const res = await fetch("https://reark.ewn-utt.workers.dev/members?userId=" + userId);
+      const json = await res.json();
+      // 找會員資料index
+      let idx = -1;
+      for(let i=1;i<json.values.length;i++){
+        if(json.values[i][1]===userId){
+          idx=i; break;
+        }
+      }
+      const data = json.values[idx];
+      document.getElementById("name").value = data[2];
+      document.getElementById("idNumber").value = data[3];
+      document.getElementById("birthday").value = data[4];
+      document.getElementById("gender").value = data[5];
+      document.getElementById("phone").value = data[6];
+      for(let c in taiwanDistricts) {
+        if(data[7] && data[7].indexOf(c)===0) {
+          document.getElementById("addressCity").value = c;
+          document.getElementById("addressDistrict").innerHTML = '<option value="">請選擇行政區</option>';
+          taiwanDistricts[c].forEach(d=>{
+            const op=document.createElement("option");
+            op.value=d; op.text=d;
+            document.getElementById("addressDistrict").appendChild(op);
+          });
+          let remainAddr = data[7].substring(c.length);
+          taiwanDistricts[c].forEach(dist=>{
+            if(remainAddr.indexOf(dist)===0) {
+              document.getElementById("addressDistrict").value = dist;
+              document.getElementById("addressDetail").value = remainAddr.substring(dist.length);
+            }
+          });
+        }
+      }
+      document.getElementById("branch").value = data[8];
+      showPage("register");
+    };
   </script>
 </body>
 </html>
