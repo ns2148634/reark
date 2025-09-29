@@ -69,7 +69,7 @@
     </section>
   </main>
   <script>
-    const liffId = '2008128192-ANzL1oyW'; // 換成你的 LIFF ID
+    const liffId = '2008128192-ANzL1oyW';
     const taiwanDistricts = {
       "台北市":["中正區","大同區","中山區","松山區","大安區","萬華區","信義區","士林區","北投區","內湖區","南港區","文山區"],
       "新北市":["板橋區","新莊區","中和區","永和區","三重區","土城區","蘆洲區","樹林區","三峽區","鶯歌區","淡水區","瑞芳區","五股區","泰山區","林口區","深坑區","石碇區","坪林區","三芝區","石門區","八里區","平溪區","雙溪區","貢寮區","金山區","萬里區","烏來區"],
@@ -97,27 +97,37 @@
 
     function showPage(sectionId){
       Array.from(document.querySelectorAll('main > section')).forEach(sec => sec.style.display='none');
-      let dom = document.getElementById(sectionId);
-      if(dom) dom.style.display = '';
+      document.getElementById(sectionId).style.display = '';
     }
 
-    // 填城市選單
+    // 頁面載入自動驗證LINE ID &切換畫面
     window.addEventListener('DOMContentLoaded', async () => {
       const citySel = document.getElementById("addressCity");
       Object.keys(taiwanDistricts).forEach(city=>{
-        const op=document.createElement("option");
-        op.value=city; op.text=city;
-        citySel.appendChild(op);
+        const op=document.createElement("option"); op.value=city; op.text=city; citySel.appendChild(op);
       });
       await liff.init({ liffId });
       if (!liff.isLoggedIn()) liff.login();
       const profile = await liff.getProfile();
-      document.getElementById("userId").value = profile.userId;
-      showPage("register");
+      const userId = profile.userId;
+      document.getElementById("userId").value = userId;
+
+      // 自動判斷是否已註冊
+      fetch("https://reark.ewn-utt.workers.dev/members?userId=" + userId)
+        .then(res => res.json())
+        .then(json => {
+          const values = json.values;
+          if (values.length > 1) {
+            showProfileSection(values); // 帶參數避免二次fetch
+            showPage("profile");
+          } else {
+            showPage("register");
+          }
+        });
       document.getElementById("loading").style.display="none";
     });
 
-    // 行政區連動
+    // 行政區三級連動
     document.getElementById("addressCity").addEventListener("change", function(){
       const distSel=document.getElementById("addressDistrict");
       distSel.innerHTML='<option value="">請選擇行政區</option>';
@@ -131,63 +141,60 @@
       }
     });
 
-    // 註冊提交（userId一起送，順序和表單一致）
-   document.getElementById("registerForm").addEventListener("submit", async function(e){
-  e.preventDefault();
-  const data = {
-    userId: document.getElementById("userId").value,
-    name: document.getElementById("name").value,
-    idNumber: document.getElementById("idNumber").value,
-    birthday: document.getElementById("birthday").value,
-    gender: document.getElementById("gender").value,
-    phone: document.getElementById("phone").value,
-    address: document.getElementById("addressCity").value +
-             document.getElementById("addressDistrict").value +
-             document.getElementById("addressDetail").value,
-    branch: document.getElementById("branch").value
-  };
-  const res = await fetch("https://reark.ewn-utt.workers.dev/members", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify(data)
-  });
-  const result = await res.json();
- if(result.updates || result.success) {
-  // 自訂完成彈窗
-  const popup = document.createElement('div');
-  popup.style = 'position:fixed;top:30%;left:50%;transform:translate(-50%,-50%);background:#fff;padding:30px 24px;border-radius:12px;box-shadow:0 4px 32px #00968822;z-index:1200;font-size:1.2em;color:#009688;font-weight:bold;text-align:center;';
-  popup.innerHTML = "註冊成功！<br><button id='closeToLine' style='margin-top:25px;border:none;background:#009688;color:#fff;padding:10px 34px;font-size:1em;border-radius:8px;cursor:pointer;'>確定</button>";
-  document.body.appendChild(popup);
+    document.getElementById("registerForm").addEventListener("submit", async function(e){
+      e.preventDefault();
+      const data = {
+        userId: document.getElementById("userId").value,
+        name: document.getElementById("name").value,
+        idNumber: document.getElementById("idNumber").value,
+        birthday: document.getElementById("birthday").value,
+        gender: document.getElementById("gender").value,
+        phone: document.getElementById("phone").value,
+        address: document.getElementById("addressCity").value +
+                 document.getElementById("addressDistrict").value +
+                 document.getElementById("addressDetail").value,
+        branch: document.getElementById("branch").value
+      };
+      const res = await fetch("https://reark.ewn-utt.workers.dev/members", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(data)
+      });
+      const result = await res.json();
+      if(result.updates || result.success) {
+        // 註冊完成直接關閉視窗回LINE
+        const popup = document.createElement('div');
+        popup.style = 'position:fixed;top:30%;left:50%;transform:translate(-50%,-50%);background:#fff;padding:30px 24px;border-radius:12px;box-shadow:0 4px 32px #00968822;z-index:1200;font-size:1.2em;color:#009688;font-weight:bold;text-align:center;';
+        popup.innerHTML = "註冊成功！<br><button id='closeToLine' style='margin-top:25px;border:none;background:#009688;color:#fff;padding:10px 34px;font-size:1em;border-radius:8px;cursor:pointer;'>確定</button>";
+        document.body.appendChild(popup);
+        document.getElementById("closeToLine").onclick = function(){
+          document.body.removeChild(popup);
+          liff.closeWindow();
+        };
+      } else {
+        alert("註冊失敗！");
+      }
+    });
 
-  document.getElementById("closeToLine").onclick = function(){
-    document.body.removeChild(popup);
-    liff.closeWindow(); // 關閉LIFF頁，直接回到LINE對話
-  };
-} else {
-  alert("註冊失敗！");
-}
-
-});
-
-
-    // 顯示個人會員資料（查詢 userId）
-    function showProfileSection() {
-      showPage("profile");
-      const userId = document.getElementById("userId").value;
-      fetch("https://reark.ewn-utt.workers.dev/members?userId=" + userId)
+    // 顯示會員資料（只顯示 C 欄後欄位）
+    function showProfileSection(valuesFromAPI) {
+      let values = valuesFromAPI;
+      if (!values) {
+        const userId = document.getElementById("userId").value;
+        return fetch("https://reark.ewn-utt.workers.dev/members?userId=" + userId)
         .then(res => res.json())
-        .then(json => {
-          const values = json.values;
-          let html = '<ul style="list-style:none;padding:0;">';
-          if(values.length > 1) {
-            values[0].forEach((h,i)=>{
-              html += `<li style="margin-bottom:6px;"><b>${h}：</b> ${values[1][i]||''}</li>`;
-            });
-          }
-          html += '</ul>';
-          document.getElementById("profileContent").innerHTML = html;
-        });
+        .then(json => showProfileSection(json.values));
+      }
+      const labels = values[0].slice(2, 11); // C到K欄
+      const data = values[1].slice(2, 11);   // C到K欄
+      let html = '<ul style="list-style:none;padding:0;">';
+      labels.forEach((h,i)=>{
+        html += `<li style="margin-bottom:6px;"><b>${h}：</b> ${data[i]||''}</li>`;
+      });
+      html += '</ul>';
+      document.getElementById("profileContent").innerHTML = html;
     }
+
     document.getElementById("backLineBtn").onclick = function(){
       liff.closeWindow();
     }
